@@ -7,10 +7,9 @@ TensorFlow implementation of [Continuous Deep q-Learning with Model-based Accele
 
 ## Requirements
 
-- Python 2.7
+- [TensorFlow](https://www.tensorflow.org/): 1.14.0rc1
+- Python: 3.7.0
 - [gym](https://github.com/openai/gym)
-- [TensorFlow](https://www.tensorflow.org/) 0.9+
-
 
 ## Usage
 
@@ -47,6 +46,13 @@ Training details of `Pendulum-v0` with different hyperparameters.
 - [keras implementation](https://gym.openai.com/evaluations/eval_CzoNQdPSAm0J3ikTBSTCg)
 
 
-## Author
+## Original Author
 
 Taehoon Kim / [@carpedm20](http://carpedm20.github.io/)
+
+## Modified By
+Xin Li
+
+(Modified version for speed harmonization research)
+
+
