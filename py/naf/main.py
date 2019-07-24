@@ -1,4 +1,6 @@
 import gym
+#from src.Vissim import Vissim
+from src.Env_Test import Env_Test
 import logging
 import numpy as np
 import tensorflow as tf
@@ -12,7 +14,7 @@ from utils import get_model_dir, preprocess_conf
 flags = tf.app.flags
 
 # environment
-flags.DEFINE_string('env_name', 'Pendulum-v0', 'name of environment')
+flags.DEFINE_string('env_name', 'Pendulum-v0', 'Vissim')
 
 # network
 flags.DEFINE_string('hidden_dims', '[100, 100]', 'dimension of hidden layers')
@@ -42,8 +44,8 @@ flags.DEFINE_integer('max_episodes', 10000, 'maximum # of episodes to train')
 # Debug
 flags.DEFINE_boolean('is_train', True, 'training or testing')
 flags.DEFINE_integer('random_seed', 123, 'random seed')
-flags.DEFINE_boolean('monitor', False, 'monitor the training or not')
-flags.DEFINE_boolean('display', False, 'display the game screen or not')
+#flags.DEFINE_boolean('monitor', False, 'monitor the training or not')
+#flags.DEFINE_boolean('display', False, 'display the game screen or not')
 flags.DEFINE_string('log_level', 'INFO', 'log level [DEBUG, INFO, WARNING, ERROR, CRITICAL]')
 
 conf = flags.FLAGS
@@ -57,20 +59,15 @@ tf.set_random_seed(conf.random_seed)
 np.random.seed(conf.random_seed)
 
 def main(_):
-  model_dir = get_model_dir(conf,
-      ['is_train', 'random_seed', 'monitor', 'display', 'log_level'])
+  #model_dir = get_model_dir(conf, ['is_train', 'random_seed', 'monitor', 'display', 'log_level'])
+  model_dir = "./saved_model/"
 
   preprocess_conf(conf)
 
   with tf.compat.v1.Session() as sess:
     # environment
-    env = gym.make(conf.env_name)
-    env.seed(conf.random_seed)
-
-    assert isinstance(env.observation_space, gym.spaces.Box), \
-      "observation space must be continuous"
-    assert isinstance(env.action_space, gym.spaces.Box), \
-      "action space must be continuous"
+    #env = Vissim()
+    env = Env_Test()
 
     # exploration strategy
     if conf.noise == 'ou':
@@ -85,7 +82,7 @@ def main(_):
     # networks
     shared_args = {
       'sess': sess,
-      'input_shape': env.observation_space.shape,
+      'input_shape': env.state_space.shape,
       'action_size': env.action_space.shape[0],
       'hidden_dims': conf.hidden_dims,
       'use_batch_norm': conf.use_batch_norm,
@@ -113,7 +110,7 @@ def main(_):
                 conf.discount, conf.batch_size, conf.learning_rate,
                 conf.max_steps, conf.update_repeat, conf.max_episodes)
 
-    agent.run(conf.monitor, conf.display, conf.is_train)
+    agent.run(conf.is_train)
 
 if __name__ == '__main__':
   tf.app.run()

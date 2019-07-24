@@ -20,6 +20,7 @@ class Statistic(object):
 
     self.model_dir = model_dir
     self.saver = tf.compat.v1.train.Saver(variables + [self.t_op], max_to_keep=max_to_keep)
+    
     #self.writer = tf.compat.v1.summary.FileWriter('./logs/%s' % self.model_dir, self.sess.graph)
     self.writer = tf.compat.v1.summary.FileWriter('./logs/model_summary.txt')
 

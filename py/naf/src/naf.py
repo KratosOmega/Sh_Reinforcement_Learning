@@ -4,6 +4,7 @@ logger = getLogger(__name__)
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib.framework import get_variables
+import gc
 
 from .utils import get_timestamp
 
@@ -40,25 +41,21 @@ class NAF(object):
 
       self.optim = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
 
-  def run(self, monitor=False, display=False, is_train=True):
+  def run(self, is_train=True):
     self.stat.load_model()
     self.target_network.hard_copy_from(self.pred_network)
-
-    if monitor:
-      self.env.monitor.start('/tmp/%s-%s' % (self.stat.env_name, get_timestamp()))
 
     for self.idx_episode in range(self.max_episodes):
       state = self.env.reset()
 
       for t in range(0, self.max_steps):
-        if display: self.env.render()
-
         # 1. predict
         action = self.predict(state)
 
         # 2. step
         self.prestates.append(state)
-        state, reward, terminal, _ = self.env.step(action)
+
+        state, reward, terminal = self.env.step(action)
         self.poststates.append(state)
 
         terminal = True if t == self.max_steps - 1 else terminal
@@ -74,8 +71,8 @@ class NAF(object):
           self.strategy.reset()
           break
 
-    if monitor:
-      self.env.monitor.close()
+        # garbage recycling
+        gc.collect()
 
   def run2(self, monitor=False, display=False, is_train=True):
     target_y = tf.placeholder(tf.float32, [None], name='target_y')
@@ -100,9 +97,6 @@ class NAF(object):
       episode_reward = 0
 
       for t in range(self.max_steps):
-        if display:
-          self.env.render()
-
         # predict the mean action from current observation
         x_ = np.array([observation])
         u_ = self.pred_network.mu.eval({self.pred_network.x: x_})[0]
