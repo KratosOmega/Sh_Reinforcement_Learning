@@ -1,6 +1,9 @@
 import os
 import numpy as np
 import tensorflow as tf
+import datetime
+import csv
+
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -34,6 +37,10 @@ class Statistic(object):
         self.summary_placeholders[tag] = tf.compat.v1.placeholder('float32', None, name=tag.replace(' ', '_'))
         self.summary_ops[tag]  = tf.summary.scalar('%s/%s' % (self.env_name, tag), self.summary_placeholders[tag])
 
+    # add line spliter to report
+    #self.updateReport(r"\report\episode_report.csv", ["===========================================" + str(datetime.datetime.now())])
+    self.updateReport("/report/episode_report.csv", ["===========================================" + str(datetime.datetime.now())])    
+
   def reset(self):
     self.total_q = 0.
     self.total_v = 0.
@@ -63,8 +70,17 @@ class Statistic(object):
       avg_r = np.mean(self.ep_rewards)
       total_r = np.sum(self.ep_rewards)
 
+      print("")
+      print("*-------------------------------------------------*")
       logger.info('t: %d, R: %.3f, r: %.3f, q: %.3f, v: %.3f, a: %.3f, l: %.3f' \
           % (self.t, total_r, avg_r, avg_q, avg_q, avg_a, avg_l))
+
+      t = datetime.datetime.now()
+      time = str(t.date()) + "_" + str(t.hour) + "h-" + str(t.minute) + "m-" + str(t.second) + "s"
+      #self.updateReport(r"\report\episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l)])
+      self.updateReport("/report/episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l)])      
+      print("*-------------------------------------------------*")
+      print("")
 
       if self.max_avg_r == None:
         self.max_avg_r = avg_r
@@ -109,3 +125,10 @@ class Statistic(object):
       logger.info("Load FAILED: %s" % self.model_dir)
 
     self.t = self.t_add_op.eval(session=self.sess)
+
+  def updateReport(self, file_name, entry):
+    path = os.getcwd() + file_name
+    with open(path, 'a', newline='') as fileWriter:
+      writer = csv.writer(fileWriter)
+      writer.writerow(entry)
+    fileWriter.close()    

@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.contrib.framework import get_variables
 import gc
+import datetime
 
 from .utils import get_timestamp
 
