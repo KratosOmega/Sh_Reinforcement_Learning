@@ -38,8 +38,8 @@ class Statistic(object):
         self.summary_ops[tag]  = tf.summary.scalar('%s/%s' % (self.env_name, tag), self.summary_placeholders[tag])
 
     # add line spliter to report
-    #self.updateReport(r"\report\episode_report.csv", ["===========================================" + str(datetime.datetime.now())])
-    self.updateReport("/report/episode_report.csv", ["===========================================" + str(datetime.datetime.now())])    
+    self.updateReport(r"\report\episode_report.csv", ["===========================================" + str(datetime.datetime.now())])
+    #self.updateReport("/report/episode_report.csv", ["===========================================" + str(datetime.datetime.now())])    
 
   def reset(self):
     self.total_q = 0.
@@ -77,8 +77,8 @@ class Statistic(object):
 
       t = datetime.datetime.now()
       time = str(t.date()) + "_" + str(t.hour) + "h-" + str(t.minute) + "m-" + str(t.second) + "s"
-      #self.updateReport(r"\report\episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l)])
-      self.updateReport("/report/episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l)])      
+      self.updateReport(r"\report\episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l)])
+      #self.updateReport("/report/episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l)])      
       print("*-------------------------------------------------*")
       print("")
 

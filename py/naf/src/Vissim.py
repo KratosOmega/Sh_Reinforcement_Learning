@@ -332,9 +332,8 @@ class Vissim:
 
         # </editor-fold>
 
-"""
+
 # test:
 if __name__ == '__main__':
     vissim = Vissim()
-    vissim.get_vissim_state(1, 180*5, [45, 55, 60, 65, 70, 75, 80])
-"""
+    vissim.reset()

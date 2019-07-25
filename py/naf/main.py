@@ -1,4 +1,4 @@
-import gym
+#import gym
 #from src.Vissim import Vissim
 from src.Env_Test import Env_Test
 import logging
