@@ -45,7 +45,7 @@ class Vissim:
         self.vissim.Simulation.SetAttValue("randSeed", randSeed) # car stream behavior (how fast car into, how many cars into)
         self.vissim.Simulation.SetAttValue("NumCores", 1)
         self.vissim.Simulation.SetAttValue("UseMaxSimSpeed", True)
-        self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 0) #Disable the visibility of all dynamic elements
+        self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 1) #Disable the visibility of all dynamic elements
 
     def set_evaluation_atts(self, simPeriod, dataCollectionInterval = 30):
         # |-------|-------|-------|-------|-------| ..... | 5000
@@ -285,6 +285,7 @@ class Vissim:
 
     def reset(self, actions=[50, 50, 50], count=1, run_times=(180*5)):
         # set input speed for SH zone
+        self.stop_simulation()
         self.set_speed("speed_input", actions)
         flow_rate = 0.0
         density = 0.0

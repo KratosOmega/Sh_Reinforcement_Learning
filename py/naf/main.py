@@ -56,7 +56,7 @@ logger.propagate = False
 logger.setLevel(conf.log_level)
 
 # set random seed
-tf.set_random_seed(conf.random_seed)
+tf.compat.v1.set_random_seed(conf.random_seed)
 np.random.seed(conf.random_seed)
 
 def main(_):
@@ -114,4 +114,4 @@ def main(_):
     agent.run(conf.is_train)
 
 if __name__ == '__main__':
-  tf.app.run()
+  tf.compat.v1.app.run()

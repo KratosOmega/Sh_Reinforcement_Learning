@@ -39,10 +39,10 @@ class NAF(object):
     self.speed_input = [75, 75, 75]
 
     with tf.name_scope('optimizer'):
-      self.target_y = tf.placeholder(tf.float32, [None], name='target_y')
-      self.loss = tf.reduce_mean(tf.squared_difference(self.target_y, tf.squeeze(self.pred_network.Q)), name='loss')
+      self.target_y = tf.compat.v1.placeholder(tf.float32, [None], name='target_y')
+      self.loss = tf.reduce_mean(tf.math.squared_difference(self.target_y, tf.squeeze(self.pred_network.Q)), name='loss')
 
-      self.optim = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
+      self.optim = tf.compat.v1.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
 
   def run(self, is_train=True):
     self.stat.load_model()
@@ -61,6 +61,11 @@ class NAF(object):
         # transform actions into vissim version
         action = np.clip(action, -1, 1)
         transformed_action = self.convert_actions(action)
+
+        print("---------------------------")
+        print(state)
+        print(transformed_action)
+        print("")
 
         state, reward, terminal = self.env.step(transformed_action)
         self.poststates.append(state)

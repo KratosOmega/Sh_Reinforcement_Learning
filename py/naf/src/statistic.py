@@ -27,7 +27,7 @@ class Statistic(object):
     #self.writer = tf.compat.v1.summary.FileWriter('./logs/%s' % self.model_dir, self.sess.graph)
     self.writer = tf.compat.v1.summary.FileWriter('./logs/model_summary.txt')
 
-    with tf.variable_scope('summary'):
+    with tf.compat.v1.variable_scope('summary'):
       scalar_summary_tags = ['total r', 'avg r', 'avg q', 'avg v', 'avg a', 'avg l']
 
       self.summary_placeholders = {}
@@ -35,7 +35,7 @@ class Statistic(object):
 
       for tag in scalar_summary_tags:
         self.summary_placeholders[tag] = tf.compat.v1.placeholder('float32', None, name=tag.replace(' ', '_'))
-        self.summary_ops[tag]  = tf.summary.scalar('%s/%s' % (self.env_name, tag), self.summary_placeholders[tag])
+        self.summary_ops[tag]  = tf.compat.v1.summary.scalar('%s/%s' % (self.env_name, tag), self.summary_placeholders[tag])
 
     # add line spliter to report
     self.updateReport(r"\report\episode_report.csv", ["===========================================" + str(datetime.datetime.now())])
@@ -73,7 +73,7 @@ class Statistic(object):
       print("")
       print("*-------------------------------------------------*")
       logger.info('t: %d, R: %.3f, r: %.3f, q: %.3f, v: %.3f, a: %.3f, l: %.3f' \
-          % (self.t, total_r, avg_r, avg_q, avg_q, avg_a, avg_l))
+          % (self.t, total_r, avg_r, avg_q, avg_v, avg_a, avg_l))
 
       t = datetime.datetime.now()
       time = str(t.date()) + "_" + str(t.hour) + "h-" + str(t.minute) + "m-" + str(t.second) + "s"
