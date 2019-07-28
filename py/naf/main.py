@@ -1,6 +1,6 @@
 #import gym
-#from src.Vissim import Vissim
-from src.Env_Test import Env_Test
+from src.Vissim import Vissim
+#from src.Env_Test import Env_Test
 import logging
 import numpy as np
 import tensorflow as tf
@@ -67,8 +67,8 @@ def main(_):
 
   with tf.compat.v1.Session() as sess:
     # environment
-    #env = Vissim()
-    env = Env_Test()
+    env = Vissim()
+    #env = Env_Test()
 
     # exploration strategy
     if conf.noise == 'ou':

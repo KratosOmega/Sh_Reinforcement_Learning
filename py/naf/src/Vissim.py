@@ -1,5 +1,6 @@
 import win32com.client as com
 import numpy as np
+import random
 
 class Vissim:
     vissim = com.dynamic.Dispatch('Vissim.Vissim.1100')
@@ -11,7 +12,7 @@ class Vissim:
     SimRes = 5
     RandSeed = 54
     DataCollectionInterval = 60
-    volume = 5000
+    volume = 6000 #5000
 
     def __init__(self):
         self.vissim.LoadNet(self.NetworkPath)
@@ -22,27 +23,33 @@ class Vissim:
         self.set_vehicle_input(self.volume)
         self.set_w99cc1distr(103)
         self.vissim.ResumeUpdateGUI()
-        # 6 state = flowrate_1, density_1, flowrate_2, density_2, flowrate_3, density_3
-        self.state_space = np.ndarray(shape=(6,), dtype=float)
+        # 6 state = flowrate_1, density_1, density_2, density_3
+        self.state_space = np.ndarray(shape=(4,), dtype=float)
         # 3 action = speed_limit_1, speed_limit_2, speed_limit_3
         self.action_space = np.ndarray(shape=(3,), dtype=float)
 
-
     def set_w99cc1distr(self, value):
+        # value = distance between 2 car (front to back)
+        print("===============================")
+        print(self.vissim.Net.DrivingBehaviors)
+        print("===============================")        
         self.vissim.Net.DrivingBehaviors.ItemByKey(3).SetAttValue("W99cc1Distr", value)
 
     def set_vehicle_input(self, volume):
+        # volumne = # of car per hour in the simulation
         self.vissim.Net.VehicleInputs.ItemByKey(1).SetAttValue("Volume(1)", volume)
 
     def set_simulation_atts(self, simPeriod, simRes, randSeed):
         self.vissim.Simulation.SetAttValue("simPeriod", simPeriod)
         self.vissim.Simulation.SetAttValue("simRes", simRes)
-        self.vissim.Simulation.SetAttValue("randSeed", randSeed)
+        self.vissim.Simulation.SetAttValue("randSeed", randSeed) # car stream behavior (how fast car into, how many cars into)
         self.vissim.Simulation.SetAttValue("NumCores", 1)
         self.vissim.Simulation.SetAttValue("UseMaxSimSpeed", True)
-        self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 1) #Disable the visibility of all dynamic elements
+        self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 0) #Disable the visibility of all dynamic elements
 
     def set_evaluation_atts(self, simPeriod, dataCollectionInterval = 30):
+        # |-------|-------|-------|-------|-------| ..... | 5000
+        # 0       30      30      30    ...
         self.vissim.Evaluation.SetAttValue("DataCollCollectData", True)
         self.vissim.Evaluation.SetAttValue("DataCollToTime", simPeriod)
         self.vissim.Evaluation.SetAttValue("DataCollFromTime", 0)
@@ -73,42 +80,29 @@ class Vissim:
     def stop_simulation(self):
         self.vissim.Simulation.Stop()
 
-    def set_all_desire_speed(self, speeds):
-        count = self.vissim.Net.DesSpeedDecisions.Count
+    def set_speed(self, speed_cat, speeds):
+        land_id_dict = {
+            "speed_input": [1, 2, 3],
+            "speed_limit": [4, 5, 6],
+        }
+
+        lane_id = land_id_dict[speed_cat]
         spd_nos = self.get_desire_speed_number_array(speeds)
-        i = 0
-        while i <= count - 3:
-            index = i // 3
-            self.vissim.Net.DesSpeedDecisions.ItemByKey(i + 1).SetAttValue("DesSpeedDistr(10)", spd_nos[index])
-            self.vissim.Net.DesSpeedDecisions.ItemByKey(i + 1).SetAttValue("DesSpeedDistr(70)", spd_nos[index])
-            self.vissim.Net.DesSpeedDecisions.ItemByKey(i + 2).SetAttValue("DesSpeedDistr(10)", spd_nos[index])
-            self.vissim.Net.DesSpeedDecisions.ItemByKey(i + 2).SetAttValue("DesSpeedDistr(70)", spd_nos[index])
-            self.vissim.Net.DesSpeedDecisions.ItemByKey(i + 3).SetAttValue("DesSpeedDistr(10)", spd_nos[index])
-            self.vissim.Net.DesSpeedDecisions.ItemByKey(i + 3).SetAttValue("DesSpeedDistr(70)", spd_nos[index])
-            i += 3
+
+        for i in range(len(lane_id)):
+            self.vissim.Net.DesSpeedDecisions.ItemByKey(lane_id[i]).SetAttValue("DesSpeedDistr(10)", spd_nos[i])
+
 
     def get_desire_speed_number(self, speed):
-        speed_dict = {
-            30: 700,
-            35: 705,
-            40: 710,
-            45: 715,
-            50: 720,
-            55: 725,
-            60: 730,
-            65: 735,
-            70: 740,
-            75: 745,
-            80: 750,
-            85: 755,
-            90: 760,
-            95: 765,
-            100: 770,
-            105: 775,
-            110: 780,
-            115: 785,
-            120: 790,
-        }
+        speed_dict = {}
+        speed_step = 19
+        speed_interval = 5
+        speed_init = 30
+        speed_vissim_init = 700
+
+        for i in range(speed_step):
+            speed_dict[speed_init + i * speed_interval] = speed_vissim_init + i * speed_interval
+        
         return speed_dict[speed]
 
     def get_desire_speed_number_array(self, speeds):
@@ -117,58 +111,6 @@ class Vissim:
         for i in range(0, length):
             desirespeednums[i] = self.get_desire_speed_number(speeds[i])
         return desirespeednums
-
-    def reset(self, count=1, actions=[45, 55, 60, 65, 70, 75, 80], run_times=(180*5)):
-        self.set_all_desire_speed(actions)
-        flow_rate = 0.0
-        density = 0.0
-
-        for i in range(0, run_times):
-            self.run_single_step()
-
-        datapo1_vehs = self.get_current_data_collection_result_vehs(1)
-        flow_rate = self.calc_flow_rate(datapo1_vehs, self.DataCollectionInterval)
-
-        density1 = self.get_current_density(5)
-        density2 = self.get_current_density(6)
-        density3 = self.get_current_density(7)
-        density4 = self.get_current_density(8)
-        density5 = self.get_current_density(9)
-        density6 = self.get_current_density(10)
-
-        state = np.array([flow_rate, density1, density2, density3, density4, density5, density6])
-
-        return state
-
-    def step(self, actions, run_times=(180*5)):
-        self.set_all_desire_speed(actions)
-        Reward = 0
-
-        for i in range(0, run_times):
-            self.run_single_step()
-
-        # get reward (discharging rate)
-        datapo4_vehs = self.get_current_data_collection_result_vehs(4)
-        reward = self.calc_flow_rate(datapo4_vehs, self.DataCollectionInterval)
-        
-        datapo1_vehs = self.get_current_data_collection_result_vehs(1)
-        flow_rate = self.calc_flow_rate(datapo1_vehs, self.DataCollectionInterval)
-
-        density1 = self.get_current_density(5)
-        density2 = self.get_current_density(6)
-        density3 = self.get_current_density(7)
-        density4 = self.get_current_density(8)
-        density5 = self.get_current_density(9)
-        density6 = self.get_current_density(10)
-
-        # set state (flow rate, density of [SH, Acc])
-        state = np.array([flow_rate, density1, density2, density3, density4, density5, density6])
-
-        # set bottle next discharging rate threshold
-        terminal = reward > 6000
-
-        return state, reward, terminal
-
 
     def run_one_interval(self):
         for i in range(0, self.SimRes * 180):
@@ -211,7 +153,12 @@ class Vissim:
         return self.vissim.Net.Vehicles.GetMultiAttValues("Pos")
 
     def get_all_vehicles_by_lanes(self, link_id,  lane_id):
-        return self.vissim.Net.Links.ItemByKey(link_id).Lanes.ItemByKey(lane_id).Vehs
+        """
+        3-1, 3-2, 3-3
+        """
+        lane_vehs_num_obj = self.vissim.Net.Links.ItemByKey(link_id).Lanes.ItemByKey(lane_id).Vehs
+
+        return int(len(lane_vehs_num_obj) / 2)
 
     # </editor-fold>
 
@@ -332,8 +279,76 @@ class Vissim:
 
         # </editor-fold>
 
+    def get_rand_speed(self, speed_init, speed_interval, step_min, step_max):
+        return speed_init + random.randint(step_min, step_max) * speed_interval
 
+
+    def reset(self, actions=[50, 50, 50], count=1, run_times=(180*5)):
+        # set input speed for SH zone
+        self.set_speed("speed_input", actions)
+        flow_rate = 0.0
+        density = 0.0
+
+        for i in range(0, run_times):
+            self.run_single_step()
+
+        vehs_pass_to_acc = self.get_current_data_collection_result_vehs(1)
+        flow_rate = self.calc_flow_rate(vehs_pass_to_acc, self.DataCollectionInterval)
+
+        density1 = self.get_all_vehicles_by_lanes(3, 1)
+        density2 = self.get_all_vehicles_by_lanes(3, 2)
+        density3 = self.get_all_vehicles_by_lanes(3, 3)                
+
+        #state = np.array([flow_rate, density1, density2, density3, density4, density5, density6])
+        state = np.array([flow_rate, density1, density2, density3])
+
+        return state
+
+    def step(self, actions, run_times=(180*5)):
+        self.set_speed("speed_input", actions)
+        Reward = 0
+
+        for i in range(0, run_times):
+            self.run_single_step()
+
+        # get reward (discharging rate)
+        vehs_pass_to_bn = self.get_current_data_collection_result_vehs(4)
+        reward = self.calc_flow_rate(vehs_pass_to_bn, self.DataCollectionInterval)
+        
+        vehs_pass_to_acc = self.get_current_data_collection_result_vehs(1)
+        flow_rate = self.calc_flow_rate(vehs_pass_to_acc, self.DataCollectionInterval)
+
+        density1 = self.get_all_vehicles_by_lanes(3, 1)
+        density2 = self.get_all_vehicles_by_lanes(3, 2)
+        density3 = self.get_all_vehicles_by_lanes(3, 3) 
+
+        # set state (flow rate, density of [SH, Acc])
+        state = np.array([flow_rate, density1, density2, density3])
+
+        # set bottle next discharging rate threshold
+        terminal = reward > 6000
+
+        return state, reward, terminal
+
+"""
 # test:
 if __name__ == '__main__':
     vissim = Vissim()
-    vissim.reset()
+    state = vissim.reset([
+        vissim.get_rand_speed(30, 5, 0, 18), 
+        vissim.get_rand_speed(30, 5, 0, 18), 
+        vissim.get_rand_speed(30, 5, 0, 18)
+    ])
+
+    while True:
+        state, reward, terminal = vissim.step([
+            vissim.get_rand_speed(30, 5, 0, 18), 
+            vissim.get_rand_speed(30, 5, 0, 18), 
+            vissim.get_rand_speed(30, 5, 0, 18)
+            ])
+
+        print("----------------------------")
+        print(state)
+        print(reward)
+        print("----------------------------")        
+"""

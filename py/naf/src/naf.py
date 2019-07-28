@@ -35,6 +35,8 @@ class NAF(object):
     self.rewards = []
     self.poststates = []
     self.terminals = []
+    # the initial speed give to the beginning of the traffic
+    self.speed_input = [75, 75, 75]
 
     with tf.name_scope('optimizer'):
       self.target_y = tf.placeholder(tf.float32, [None], name='target_y')
@@ -47,7 +49,7 @@ class NAF(object):
     self.target_network.hard_copy_from(self.pred_network)
 
     for self.idx_episode in range(self.max_episodes):
-      state = self.env.reset()
+      state = self.env.reset(self.speed_input)
 
       for t in range(0, self.max_steps):
         # 1. predict
@@ -56,7 +58,11 @@ class NAF(object):
         # 2. step
         self.prestates.append(state)
 
-        state, reward, terminal = self.env.step(action)
+        # transform actions into vissim version
+        action = np.clip(action, -1, 1)
+        transformed_action = self.convert_actions(action)
+
+        state, reward, terminal = self.env.step(transformed_action)
         self.poststates.append(state)
 
         terminal = True if t == self.max_steps - 1 else terminal
@@ -190,3 +196,27 @@ class NAF(object):
         % (np.mean(q), np.mean(v), np.mean(a), np.mean(l)))
 
     return np.sum(q_list), np.sum(v_list), np.sum(a_list), np.sum(l_list)
+
+  def convert_actions(self, actions):
+        action_space = 19 # [30, 120]
+        min_speed = 30
+        max_speed = 120
+        min_output = -1 # tanh
+        #min_output = 0 # sigmoid
+        max_output = 1
+        output_range = max_output - min_output
+        mapping_size = output_range / action_space
+        speed_limits = []
+
+        for a in actions:
+            action = int((a + 1) / mapping_size) # tanh
+            #action = int(a / mapping_size) # sigmoid
+            speed = int(30 + action * 5)
+
+            if speed > max_speed:
+                speed = max_speed
+            if speed < min_speed:
+                speed = min_speed
+            speed_limits.append(speed)
+
+        return speed_limits
