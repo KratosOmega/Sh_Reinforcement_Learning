@@ -37,6 +37,7 @@ class NAF(object):
     self.terminals = []
     # the initial speed give to the beginning of the traffic
     self.speed_input = [75, 75, 75]
+    self.termination_threshold = 6100
 
     with tf.name_scope('optimizer'):
       self.target_y = tf.compat.v1.placeholder(tf.float32, [None], name='target_y')
@@ -50,6 +51,7 @@ class NAF(object):
 
     for self.idx_episode in range(self.max_episodes):
       state = self.env.reset(self.speed_input)
+      cumulative_r = 0
 
       for t in range(0, self.max_steps):
         # 1. predict
@@ -62,15 +64,31 @@ class NAF(object):
         action = np.clip(action, -1, 1)
         transformed_action = self.convert_actions(action)
 
+        state, reward, terminal = self.env.step(transformed_action)
+
+        cumulative_r += reward
+
         print("---------------------------" + str(t))
         print(state)
         print(transformed_action)
+        print(reward)
+        print(cumulative_r / (t + 1))
         print("")
 
-        state, reward, terminal = self.env.step(transformed_action)
         self.poststates.append(state)
 
+        # ----------------------------------------------------------------------- termination logic block
+        """
+        # using only one desired reward to terminate
         terminal = True if t == self.max_steps - 1 else terminal
+        """
+
+        # using only average desired reward to terminate
+        if t == self.max_steps - 1 or cumulative_r / (t + 1) > self.termination_threshold:
+          terminal = True
+        else:
+          terminal = False
+        # -----------------------------------------------------------------------
 
         # 3. perceive
         if is_train:
