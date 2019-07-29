@@ -27,6 +27,7 @@ class Vissim:
         self.state_space = np.ndarray(shape=(4,), dtype=float)
         # 3 action = speed_limit_1, speed_limit_2, speed_limit_3
         self.action_space = np.ndarray(shape=(3,), dtype=float)
+        self.reward_threshold = 6000 # desired max discharging rate
 
     def set_w99cc1distr(self, value):
         # value = distance between 2 car (front to back)
@@ -45,7 +46,8 @@ class Vissim:
         self.vissim.Simulation.SetAttValue("randSeed", randSeed) # car stream behavior (how fast car into, how many cars into)
         self.vissim.Simulation.SetAttValue("NumCores", 1)
         self.vissim.Simulation.SetAttValue("UseMaxSimSpeed", True)
-        self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 1) #Disable the visibility of all dynamic elements
+        self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 1) # Quick Mode (no car visualization)
+        #self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 0) # Normal Mode (car visualization)
 
     def set_evaluation_atts(self, simPeriod, dataCollectionInterval = 30):
         # |-------|-------|-------|-------|-------| ..... | 5000
@@ -327,7 +329,7 @@ class Vissim:
         state = np.array([flow_rate, density1, density2, density3])
 
         # set bottle next discharging rate threshold
-        terminal = reward > 6000
+        terminal = reward > self.reward_threshold
 
         return state, reward, terminal
 

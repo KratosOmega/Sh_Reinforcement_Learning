@@ -72,12 +72,12 @@ class Statistic(object):
 
       print("")
       print("*-------------------------------------------------*")
-      logger.info('t: %d, R: %.3f, r: %.3f, q: %.3f, v: %.3f, a: %.3f, l: %.3f' \
-          % (self.t, total_r, avg_r, avg_q, avg_v, avg_a, avg_l))
+      logger.info('t: %d, R: %.3f, r: %.3f, q: %.3f, v: %.3f, a: %.3f, l: %.3f, step: %d' \
+          % (self.t, total_r, avg_r, avg_q, avg_v, avg_a, avg_l, self.ep_step))
 
       t = datetime.datetime.now()
       time = str(t.date()) + "_" + str(t.hour) + "h-" + str(t.minute) + "m-" + str(t.second) + "s"
-      self.updateReport(r"\report\episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l)])
+      self.updateReport(r"\report\episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l), str(self.ep_step)])
       #self.updateReport("/report/episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l)])      
       print("*-------------------------------------------------*")
       print("")

@@ -62,7 +62,7 @@ class NAF(object):
         action = np.clip(action, -1, 1)
         transformed_action = self.convert_actions(action)
 
-        print("---------------------------")
+        print("---------------------------" + str(t))
         print(state)
         print(transformed_action)
         print("")
