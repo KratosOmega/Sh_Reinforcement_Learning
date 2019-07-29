@@ -31,7 +31,7 @@ flags.DEFINE_float('w_reg_scale', 0.001, 'scale of regularization')
 
 # exploration
 flags.DEFINE_float('noise_scale', 0.3, 'scale of noise')
-flags.DEFINE_string('noise', 'linear_decay', 'type of noise exploration [ou, linear_decay, brownian]')
+flags.DEFINE_string('noise', 'ou', 'type of noise exploration [ou, linear_decay, brownian]')
 
 # training
 flags.DEFINE_float('tau', 0.001, 'tau of soft target update')
