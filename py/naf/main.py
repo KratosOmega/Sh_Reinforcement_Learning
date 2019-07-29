@@ -18,7 +18,7 @@ flags = tf.app.flags
 flags.DEFINE_string('env_name', 'Pendulum-v0', 'Vissim')
 
 # network
-flags.DEFINE_string('hidden_dims', '[100, 100]', 'dimension of hidden layers')
+flags.DEFINE_string('hidden_dims', '[400, 800]', 'dimension of hidden layers')
 flags.DEFINE_boolean('use_batch_norm', False, 'use batch normalization or not')
 flags.DEFINE_boolean('clip_action', False, 'whether to clip an action with given bound')
 flags.DEFINE_boolean('use_seperate_networks', False, 'use seperate networks for mu, V and A')
