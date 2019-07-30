@@ -303,9 +303,9 @@ class Vissim:
         # ---------------------------------------------------------- using normalized densities
         density_all = density1 + density2 + density3
 
-        density1 = density1 / density_all
-        density2 = density2 / density_all
-        density3 = density2 / density_all
+        density1 = round(density1 / density_all, 2)
+        density2 = round(density2 / density_all, 2)
+        density3 = round(density3 / density_all, 2)
         # ----------------------------------------------------------
 
         #state = np.array([flow_rate, density1, density2, density3, density4, density5, density6])
@@ -334,9 +334,9 @@ class Vissim:
         # ---------------------------------------------------------- using normalized densities
         density_all = density1 + density2 + density3
 
-        density1 = density1 / density_all
-        density2 = density2 / density_all
-        density3 = density2 / density_all
+        density1 = round(density1 / density_all, 2)
+        density2 = round(density2 / density_all, 2)
+        density3 = round(density3 / density_all, 2)
         # ----------------------------------------------------------
 
         # set state (flow rate, density of [SH, Acc])
