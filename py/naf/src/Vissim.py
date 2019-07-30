@@ -298,7 +298,15 @@ class Vissim:
 
         density1 = self.get_all_vehicles_by_lanes(3, 1)
         density2 = self.get_all_vehicles_by_lanes(3, 2)
-        density3 = self.get_all_vehicles_by_lanes(3, 3)                
+        density3 = self.get_all_vehicles_by_lanes(3, 3)
+
+        # ---------------------------------------------------------- using normalized densities
+        density_all = density1 + density2 + density3
+
+        density1 = density1 / density_all
+        density2 = density2 / density_all
+        density3 = density2 / density_all
+        # ----------------------------------------------------------
 
         #state = np.array([flow_rate, density1, density2, density3, density4, density5, density6])
         state = np.array([flow_rate, density1, density2, density3])
@@ -321,7 +329,15 @@ class Vissim:
 
         density1 = self.get_all_vehicles_by_lanes(3, 1)
         density2 = self.get_all_vehicles_by_lanes(3, 2)
-        density3 = self.get_all_vehicles_by_lanes(3, 3) 
+        density3 = self.get_all_vehicles_by_lanes(3, 3)
+
+        # ---------------------------------------------------------- using normalized densities
+        density_all = density1 + density2 + density3
+
+        density1 = density1 / density_all
+        density2 = density2 / density_all
+        density3 = density2 / density_all
+        # ----------------------------------------------------------
 
         # set state (flow rate, density of [SH, Acc])
         state = np.array([flow_rate, density1, density2, density3])
