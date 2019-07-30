@@ -19,8 +19,8 @@ flags.DEFINE_string('env_name', 'Pendulum-v0', 'Vissim')
 
 # network
 # ------------------------------------------------------------------------------------ hidden_dims selection
-#flags.DEFINE_string('hidden_dims', '[4, 8]', 'dimension of hidden layers')
-flags.DEFINE_string('hidden_dims', '[40, 80]', 'dimension of hidden layers')
+flags.DEFINE_string('hidden_dims', '[4, 8]', 'dimension of hidden layers')
+#flags.DEFINE_string('hidden_dims', '[40, 80]', 'dimension of hidden layers')
 #flags.DEFINE_string('hidden_dims', '[400, 800]', 'dimension of hidden layers')
 #flags.DEFINE_string('hidden_dims', '[100, 200]', 'dimension of hidden layers')
 # ------------------------------------------------------------------------------------
