@@ -21,8 +21,8 @@ class Vissim:
         self.set_vehicle_input(self.volume)
         self.set_w99cc1distr(103)
         self.vissim.ResumeUpdateGUI()
-        # 6 state = flowrate_1, density_1, density_2, density_3
-        self.state_space = np.ndarray(shape=(4,), dtype=float)
+        # 6 state = flowrate_1, lane_percent_1, lane_percent_2, lane_percent_3, density_1, density_2, density_3
+        self.state_space = np.ndarray(shape=(7,), dtype=float)
         # 3 action = speed_limit_1, speed_limit_2, speed_limit_3
         self.action_space = np.ndarray(shape=(3,), dtype=float)
         self.reward_threshold = 6000 # desired max discharging rate
@@ -156,9 +156,8 @@ class Vissim:
         """
         3-1, 3-2, 3-3
         """
-        lane_vehs_num_obj = self.vissim.Net.Links.ItemByKey(link_id).Lanes.ItemByKey(lane_id).Vehs
-
-        return int(len(lane_vehs_num_obj) / 2)
+        lane_vehs_num_obj = self.vissim.Net.Links.ItemByKey(link_id).Lanes.ItemByKey(lane_id).Vehs.GetMultiAttValues("No")
+        return len(lane_vehs_num_obj)
 
     # </editor-fold>
 
@@ -301,15 +300,18 @@ class Vissim:
         density3 = self.get_all_vehicles_by_lanes(3, 3)
 
         # ---------------------------------------------------------- using normalized densities
+        acc_length = 1500
         density_all = density1 + density2 + density3
 
-        density1 = round(density1 / density_all, 2)
-        density2 = round(density2 / density_all, 2)
-        density3 = round(density3 / density_all, 2)
+        lane_percent_1 = round(density1 / density_all, 2)
+        lane_percent_2 = round(density2 / density_all, 2)
+        lane_percent_3 = round(density3 / density_all, 2)
+        density1 = round(density1 / acc_length, 2)
+        density2 = round(density2 / acc_length, 2)
+        density3 = round(density3 / acc_length, 2)
         # ----------------------------------------------------------
 
-        #state = np.array([flow_rate, density1, density2, density3, density4, density5, density6])
-        state = np.array([flow_rate, density1, density2, density3])
+        state = np.array([flow_rate, lane_percent_1, lane_percent_2, lane_percent_3, density1, density2, density3])
 
         return state
 
@@ -332,15 +334,19 @@ class Vissim:
         density3 = self.get_all_vehicles_by_lanes(3, 3)
 
         # ---------------------------------------------------------- using normalized densities
+        acc_length = 1500
         density_all = density1 + density2 + density3
 
-        density1 = round(density1 / density_all, 2)
-        density2 = round(density2 / density_all, 2)
-        density3 = round(density3 / density_all, 2)
+        lane_percent_1 = round(density1 / density_all, 2)
+        lane_percent_2 = round(density2 / density_all, 2)
+        lane_percent_3 = round(density3 / density_all, 2)
+        density1 = round(density1 / acc_length, 2)
+        density2 = round(density2 / acc_length, 2)
+        density3 = round(density3 / acc_length, 2)
         # ----------------------------------------------------------
 
         # set state (flow rate, density of [SH, Acc])
-        state = np.array([flow_rate, density1, density2, density3])
+        state = np.array([flow_rate, lane_percent_1, lane_percent_2, lane_percent_3, density1, density2, density3])
 
         # set bottle next discharging rate threshold
         terminal = reward > self.reward_threshold
