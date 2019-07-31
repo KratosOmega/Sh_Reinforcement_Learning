@@ -37,7 +37,7 @@ class NAF(object):
     self.terminals = []
     # the initial speed give to the beginning of the traffic
     self.speed_input = [75, 75, 75]
-    self.termination_threshold = 6100
+    self.termination_threshold = 0.95
 
     with tf.name_scope('optimizer'):
       self.target_y = tf.compat.v1.placeholder(tf.float32, [None], name='target_y')
