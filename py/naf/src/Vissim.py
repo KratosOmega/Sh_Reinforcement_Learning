@@ -322,7 +322,7 @@ class Vissim:
 
     def step(self, actions, run_times=(180*5)):
         self.set_speed("speed_input", actions)
-        Reward = 0
+        reward = 0
 
         for i in range(0, run_times):
             self.run_single_step()
@@ -330,8 +330,28 @@ class Vissim:
         # get reward (discharging rate)
         vehs_pass_to_bn = self.get_current_data_collection_result_vehs(4)
         discharging_rate = self.calc_flow_rate(vehs_pass_to_bn, self.DataCollectionInterval)
+
+        #------------------------------------------------------------------------------------ reward logic blcok
+
+        # no shock wave involved logic
+
         reward = round(discharging_rate / self.input_flow_rate, 4)
+
+        # ###################################################################################
         
+        """
+        # schock wave involved logic
+
+
+        diff = discharging_rate - self.input_flow_rate
+        if diff < 0:
+            print("-------- shock wave warning, applied penalty!")
+            reward = round(discharging / (2 * self.input_flow_rate), 4)
+        else:
+            reward = round(discharging_rate / self.input_flow_rate, 4)
+        """
+        #------------------------------------------------------------------------------------
+
         vehs_pass_to_acc = self.get_current_data_collection_result_vehs(1)
         flow_rate = self.calc_flow_rate(vehs_pass_to_acc, self.DataCollectionInterval)
 
