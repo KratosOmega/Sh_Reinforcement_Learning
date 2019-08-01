@@ -346,7 +346,7 @@ class Vissim:
 
         if diff > 0:
             print("-------- shock wave warning, applied penalty!")
-            reward = round(discharging_rate / self.volume, 4) # TODO: find a better flow_rate threshold for shock wave
+            reward = round(discharging_rate / (self.input_flow_rate * 2), 4) # TODO: find a better flow_rate threshold for shock wave
         else:
             reward = round(discharging_rate / self.input_flow_rate, 4)
 
