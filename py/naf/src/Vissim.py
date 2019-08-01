@@ -267,18 +267,18 @@ class Vissim:
         temp = self.get_link_vehs_by_num(lnk)
         num_vehs = temp.Length / 2
         density = num_vehs / (num_lanes * length / 1600) #  veh/mi/ln
-        return round(density, 2)
+        return round(density, 4)
 
    
     def calc_flow_rate(self, num_vehs, timeinterval):
         flow_rate = float(num_vehs) * (3600.0 / float(timeinterval)) #  veh/h
-        return round(flow_rate, 2)
+        return round(flow_rate, 4)
     
     def calc_density(self, num_vehs, timeinterval, time, distance, num_lane):
         flow_rate = float(num_vehs) * (3600.0 / float(timeinterval)) # veh/h
         velocity = float(distance) / float(time)
         density = flow_rate / (float(num_lane) * velocity)
-        return round(density, 2)
+        return round(density, 4)
 
         # </editor-fold>
 
@@ -307,13 +307,13 @@ class Vissim:
         acc_length = 1500
         density_all = density1 + density2 + density3
 
-        lane_percent_1 = round(density1 / density_all, 2)
-        lane_percent_2 = round(density2 / density_all, 2)
-        lane_percent_3 = round(density3 / density_all, 2)
-        density1 = round(density1 / acc_length, 2)
-        density2 = round(density2 / acc_length, 2)
-        density3 = round(density3 / acc_length, 2)
-        normalized_flow_rate = round(flow_rate / self.flow_rate_scalar, 2)
+        lane_percent_1 = round(density1 / density_all, 4)
+        lane_percent_2 = round(density2 / density_all, 4)
+        lane_percent_3 = round(density3 / density_all, 4)
+        density1 = round(density1 / acc_length, 4)
+        density2 = round(density2 / acc_length, 4)
+        density3 = round(density3 / acc_length, 4)
+        normalized_flow_rate = round(flow_rate / self.flow_rate_scalar, 4)
         # ----------------------------------------------------------
 
         state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3, density1, density2, density3])
@@ -330,7 +330,7 @@ class Vissim:
         # get reward (discharging rate)
         vehs_pass_to_bn = self.get_current_data_collection_result_vehs(4)
         discharging_rate = self.calc_flow_rate(vehs_pass_to_bn, self.DataCollectionInterval)
-        reward = round(discharging_rate / self.input_flow_rate, 2)
+        reward = round(discharging_rate / self.input_flow_rate, 4)
         
         vehs_pass_to_acc = self.get_current_data_collection_result_vehs(1)
         flow_rate = self.calc_flow_rate(vehs_pass_to_acc, self.DataCollectionInterval)
@@ -343,13 +343,13 @@ class Vissim:
         acc_length = 1500
         density_all = density1 + density2 + density3
 
-        lane_percent_1 = round(density1 / density_all, 2)
-        lane_percent_2 = round(density2 / density_all, 2)
-        lane_percent_3 = round(density3 / density_all, 2)
-        density1 = round(density1 / acc_length, 2)
-        density2 = round(density2 / acc_length, 2)
-        density3 = round(density3 / acc_length, 2)
-        normalized_flow_rate = round(flow_rate / self.flow_rate_scalar, 2)
+        lane_percent_1 = round(density1 / density_all, 4)
+        lane_percent_2 = round(density2 / density_all, 4)
+        lane_percent_3 = round(density3 / density_all, 4)
+        density1 = round(density1 / acc_length, 4)
+        density2 = round(density2 / acc_length, 4)
+        density3 = round(density3 / acc_length, 4)
+        normalized_flow_rate = round(flow_rate / self.flow_rate_scalar, 4)
         # ----------------------------------------------------------
 
         # set state (flow rate, density of [SH, Acc])
