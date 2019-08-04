@@ -28,6 +28,7 @@ class Vissim:
         # 3 action = speed_limit_1, speed_limit_2, speed_limit_3
         self.action_space = np.ndarray(shape=(3,), dtype=float)
         self.reward_threshold = 0.95 # desired max discharging rate
+        self.input_flow_rate = 0 # keep track current upstream flow rate
 
     def set_w99cc1distr(self, value):
         # value = distance between 2 car (front to back)
@@ -295,7 +296,7 @@ class Vissim:
             self.run_single_step()
 
         vehs_pass_to_acc = self.get_current_data_collection_result_vehs(1)
-        flow_rate = self.calc_flow_rate(vehs_pass_to_acc, self.DataCollectionInterval)
+        self.input_flow_rate = flow_rate = self.calc_flow_rate(vehs_pass_to_acc, self.DataCollectionInterval)
 
         density1 = self.get_all_vehicles_by_lanes(3, 1)
         density2 = self.get_all_vehicles_by_lanes(3, 2)
