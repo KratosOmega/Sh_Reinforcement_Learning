@@ -37,7 +37,7 @@ class NAF(object):
     self.terminals = []
     # the initial speed give to the beginning of the traffic
     self.speed_input = [75, 75, 75]
-    self.termination_threshold = 0.95
+    #self.termination_threshold = 0.95
 
     with tf.name_scope('optimizer'):
       self.target_y = tf.compat.v1.placeholder(tf.float32, [None], name='target_y')
@@ -84,7 +84,8 @@ class NAF(object):
         """
 
         # using only average desired reward to terminate
-        if t == self.max_steps - 1 or (cumulative_r / (t + 1) > self.termination_threshold and t > 10):
+        #if t == self.max_steps - 1 or (cumulative_r / (t + 1) > self.termination_threshold and t > 10):
+        if t == self.max_steps - 1:
           terminal = True
         else:
           terminal = False
