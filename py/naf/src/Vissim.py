@@ -13,7 +13,7 @@ class Vissim:
         self.SimRes = 5
         self.RandSeed = 54
         self.DataCollectionInterval = 60
-        self.volume = 6000 #5000
+        self.volume = 5000 #5000
         # -----------------------------------------------------------------------------------
         self.vissim.LoadNet(self.NetworkPath)
         self.vissim.LoadLayout(self.LayoutPath)
@@ -28,8 +28,6 @@ class Vissim:
         # 3 action = speed_limit_1, speed_limit_2, speed_limit_3
         self.action_space = np.ndarray(shape=(3,), dtype=float)
         self.reward_threshold = 0.95 # desired max discharging rate
-        self.input_flow_rate = 0 # record old flow rate for reward normalization
-        self.flow_rate_scalar = 3000 # use to scale down flow rate
 
     def set_w99cc1distr(self, value):
         # value = distance between 2 car (front to back)
@@ -297,7 +295,7 @@ class Vissim:
             self.run_single_step()
 
         vehs_pass_to_acc = self.get_current_data_collection_result_vehs(1)
-        self.input_flow_rate = flow_rate = self.calc_flow_rate(vehs_pass_to_acc, self.DataCollectionInterval)
+        flow_rate = self.calc_flow_rate(vehs_pass_to_acc, self.DataCollectionInterval)
 
         density1 = self.get_all_vehicles_by_lanes(3, 1)
         density2 = self.get_all_vehicles_by_lanes(3, 2)
@@ -313,7 +311,7 @@ class Vissim:
         density1 = round(density1 / acc_length, 4)
         density2 = round(density2 / acc_length, 4)
         density3 = round(density3 / acc_length, 4)
-        normalized_flow_rate = round(flow_rate / self.flow_rate_scalar, 4)
+        normalized_flow_rate = round(flow_rate / self.volume, 4)
         # ----------------------------------------------------------
 
         state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3, density1, density2, density3])
@@ -332,10 +330,10 @@ class Vissim:
         discharging_rate = self.calc_flow_rate(vehs_pass_to_bn, self.DataCollectionInterval)
 
         #------------------------------------------------------------------------------------ reward logic blcok
-
+        """
         # no shock wave involved logic
 
-        reward = round(discharging_rate / self.input_flow_rate, 4)
+        reward = round(discharging_rate / self.volume, 4)
 
         # ###################################################################################
         
@@ -345,10 +343,10 @@ class Vissim:
         diff = discharging_rate - self.input_flow_rate
         if diff > 0:
             print("-------- shock wave warning, applied penalty!")
-            reward = round(discharging_rate / self.volume, 4) # TODO: find a better flow_rate threshold for shock wave
+            reward = round(discharging_rate / (self.volume * 1.5), 4) # TODO: find a better flow_rate threshold for shock wave
         else:
-            reward = round(discharging_rate / self.input_flow_rate, 4)
-        """
+            reward = round(discharging_rate / self.volume, 4)
+
         #------------------------------------------------------------------------------------
 
         vehs_pass_to_acc = self.get_current_data_collection_result_vehs(1)
@@ -368,7 +366,7 @@ class Vissim:
         density1 = round(density1 / acc_length, 4)
         density2 = round(density2 / acc_length, 4)
         density3 = round(density3 / acc_length, 4)
-        normalized_flow_rate = round(flow_rate / self.flow_rate_scalar, 4)
+        normalized_flow_rate = round(flow_rate / self.volume, 4)
         # ----------------------------------------------------------
 
         # set state (flow rate, density of [SH, Acc])
