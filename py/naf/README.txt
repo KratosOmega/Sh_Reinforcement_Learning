@@ -9,6 +9,22 @@ pip install tqdm gym[all]
 python3 main.py --env_name=Vissim --is_train=True
 
 
+
+
+
+################################
+#####    >>> INDEX <<<     #####
+################################
+* origin/naf_v1.4: current main dev branch for branching off
+* origin/naf_v1.4.5.2_hidden_300_300_sw : hl=(300, 300) with shock wave penalty
+* origin/naf_v1.4.5.3_hidden_30_30_sw : hl=(30, 30) with shock wave penalty
+* origin/naf_v1.4.6.1_hidden_30_30 : hl=(30, 30) WITHOUT shock wave penalty
+* origin/naf_v1.4.6.2_hidden_300_300 : hl=(300, 300) WITHOUT shock wave penalty
+
+
+
+
+
 ################################
 #####     >>> TODO <<<     #####
 ################################
