@@ -1,6 +1,8 @@
 import win32com.client as com
 import numpy as np
 import random
+import gc
+import utils
 
 class Vissim:
 
@@ -105,7 +107,7 @@ class Vissim:
 
         for i in range(speed_step):
             speed_dict[speed_init + i * speed_interval] = speed_vissim_init + i * speed_interval
-        
+
         return speed_dict[speed]
 
     def get_desire_speed_number_array(self, speeds):
@@ -339,7 +341,7 @@ class Vissim:
         # ###################################################################################
         
         """
-        # schock wave involved logic
+        # shock wave involved logic
 
         diff = discharging_rate - self.input_flow_rate
         if diff > 0:
@@ -379,10 +381,60 @@ class Vissim:
 
         return state, reward, terminal
 
-"""
-# test:
-if __name__ == '__main__':
+    def traffic_no_sh(self, speed=[70, 70, 70], count=1, run_times=(180*5)):
+        self.set_speed("speed_input", speed)
+        reward = 0
+
+        for i in range(0, run_times):
+            self.run_single_step()
+
+        # get reward (discharging rate)
+        vehs_pass_to_bn = self.get_current_data_collection_result_vehs(4)
+        discharging_rate = self.calc_flow_rate(vehs_pass_to_bn, self.DataCollectionInterval)
+
+        #------------------------------------------------------------------------------------ reward logic blcok
+
+        # no shock wave involved logic
+
+        reward = round(discharging_rate / self.volume, 4)
+
+        # ###################################################################################
+
+        """
+        # shock wave involved logic
+
+        diff = discharging_rate - self.input_flow_rate
+        if diff > 0:
+            print("-------- shock wave warning, applied penalty!")
+            reward = round(discharging_rate / (self.volume * 1.5), 4) # TODO: find a better flow_rate threshold for shock wave
+        else:
+            reward = round(discharging_rate / self.volume, 4)
+        """
+        #------------------------------------------------------------------------------------
+
+        return reward
+
+    def record_traffic_no_sh(self, max_episodes, max_steps, speed = [70, 70, 70]):
+        for episode in range(max_episodes):
+            print("---------------------------- " + str(episode))
+            cumulative_r = 0
+
+            for t in range(0, max_steps):
+                reward = self.traffic_no_sh(speed)
+                cumulative_r += reward
+                gc.collect()
+
+            avg_r = cumulative_r / max_steps
+            utils.updateReport(r"\report\traffic_no_sh_report.csv", [avg_r])
+
+
+# ###############################################################################
+# Global method
+# ###############################################################################
+
+def test_sars():
     vissim = Vissim()
+
     state = vissim.reset([
         vissim.get_rand_speed(30, 5, 0, 18), 
         vissim.get_rand_speed(30, 5, 0, 18), 
@@ -399,5 +451,22 @@ if __name__ == '__main__':
         print("----------------------------")
         print(state)
         print(reward)
-        print("----------------------------")        
+        print("----------------------------")
+
+def collect_traffic_data():
+    max_episodes = 10000
+    max_steps = 200
+    speed = [70, 70, 70]
+
+    vissim = Vissim()
+    vissim.record_traffic_no_sh(max_episodes, max_steps, speed)
+
+
+"""
+# --------------------------------------------------------------------------------
+if __name__ == '__main__':
+    # ------------------------ testing sars data flow
+    #test_sars()
+    # ------------------------ collect traffic discharging rate w/o SH
+    collect_traffic_data()
 """

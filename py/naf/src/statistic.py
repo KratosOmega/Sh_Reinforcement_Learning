@@ -2,8 +2,7 @@ import os
 import numpy as np
 import tensorflow as tf
 import datetime
-import csv
-
+from .utils import updateReport
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -38,8 +37,8 @@ class Statistic(object):
         self.summary_ops[tag]  = tf.compat.v1.summary.scalar('%s/%s' % (self.env_name, tag), self.summary_placeholders[tag])
 
     # add line spliter to report
-    self.updateReport(r"\report\episode_report.csv", ["===========================================" + str(datetime.datetime.now())])
-    #self.updateReport("/report/episode_report.csv", ["===========================================" + str(datetime.datetime.now())])    
+    updateReport(r"\report\episode_report.csv", ["===========================================" + str(datetime.datetime.now())])
+    #updateReport("/report/episode_report.csv", ["===========================================" + str(datetime.datetime.now())])    
 
   def reset(self):
     self.total_q = 0.
@@ -77,8 +76,8 @@ class Statistic(object):
 
       t = datetime.datetime.now()
       time = str(t.date()) + "_" + str(t.hour) + "h-" + str(t.minute) + "m-" + str(t.second) + "s"
-      self.updateReport(r"\report\episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l), str(self.ep_step)])
-      #self.updateReport("/report/episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l)])      
+      updateReport(r"\report\episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l), str(self.ep_step)])
+      #updateReport("/report/episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l)])
       print("*-------------------------------------------------*")
       print("")
 
@@ -125,10 +124,3 @@ class Statistic(object):
       logger.info("Load FAILED: %s" % self.model_dir)
 
     self.t = self.t_add_op.eval(session=self.sess)
-
-  def updateReport(self, file_name, entry):
-    path = os.getcwd() + file_name
-    with open(path, 'a', newline='') as fileWriter:
-      writer = csv.writer(fileWriter)
-      writer.writerow(entry)
-    fileWriter.close()    

@@ -46,6 +46,8 @@ class NAF(object):
       self.optim = tf.compat.v1.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
 
   def run(self, is_train=True):
+    print("------------------------------------ 1")
+
     self.stat.load_model()
     self.target_network.hard_copy_from(self.pred_network)
 
@@ -106,6 +108,8 @@ class NAF(object):
         gc.collect()
 
   def run2(self, monitor=False, display=False, is_train=True):
+    print("------------------------------------ 2")
+
     target_y = tf.placeholder(tf.float32, [None], name='target_y')
     loss = tf.reduce_mean(tf.squared_difference(target_y, tf.squeeze(self.pred_network.Q)), name='loss')
 
@@ -124,23 +128,34 @@ class NAF(object):
     # the main learning loop
     total_reward = 0
     for i_episode in range(self.max_episodes):
-      observation = self.env.reset()
+      state = self.env.reset(self.speed_input)
       episode_reward = 0
+      loss_ = 0
 
       for t in range(self.max_steps):
-        # predict the mean action from current observation
-        x_ = np.array([observation])
+        # predict the mean action from current state
+        x_ = np.array([state])
         u_ = self.pred_network.mu.eval({self.pred_network.x: x_})[0]
 
         action = u_ + np.random.randn(1) / (i_episode + 1)
 
-        prestates.append(observation)
+        prestates.append(state)
         actions.append(action)
 
-        observation, reward, done, info = self.env.step(action)
+        # transform actions into vissim version
+        action = np.clip(action, -1, 1)
+        transformed_action = self.convert_actions(action)
+        state, reward, terminal = self.env.step(transformed_action)
         episode_reward += reward
 
-        rewards.append(reward); poststates.append(observation); terminals.append(done)
+        print("---------------------------" + str(t))
+        print(state)
+        print(transformed_action)
+        print(reward)
+        print(episode_reward / (t + 1))
+        print("")
+
+        rewards.append(reward); poststates.append(state); terminals.append(terminal)
 
         if len(prestates) > 10:
           loss_ = 0
@@ -159,11 +174,15 @@ class NAF(object):
 
             self.target_network.soft_update_from(self.pred_network)
 
-        if done:
+            print("average loss:", loss_/k)
+            print("Episode {} finished after {} timesteps, reward {}".format(i_episode + 1, t + 1, episode_reward))
+
+        if terminal:
           break
 
-      print("average loss:", loss_/k)
-      print("Episode {} finished after {} timesteps, reward {}".format(i_episode + 1, t + 1, episode_reward))
+        # garbage recycling
+        gc.collect()
+
       total_reward += episode_reward
 
     print("Average reward per episode {}".format(total_reward / self.episodes))
