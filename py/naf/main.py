@@ -118,6 +118,7 @@ def main(_):
                 conf.max_steps, conf.update_repeat, conf.max_episodes)
 
     agent.run(conf.is_train)
+    #agent.run2(conf.is_train)
 
 if __name__ == '__main__':
   tf.compat.v1.app.run()

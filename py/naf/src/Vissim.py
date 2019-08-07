@@ -107,7 +107,7 @@ class Vissim:
 
         for i in range(speed_step):
             speed_dict[speed_init + i * speed_interval] = speed_vissim_init + i * speed_interval
-        
+
         return speed_dict[speed]
 
     def get_desire_speed_number_array(self, speeds):
