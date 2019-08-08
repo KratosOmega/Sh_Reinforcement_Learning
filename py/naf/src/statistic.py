@@ -76,8 +76,8 @@ class Statistic(object):
 
       t = datetime.datetime.now()
       time = str(t.date()) + "_" + str(t.hour) + "h-" + str(t.minute) + "m-" + str(t.second) + "s"
-      updateReport(r"\report\episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l), str(self.ep_step)])
-      #updateReport("/report/episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_q), str(avg_a), str(avg_l)])
+      updateReport(r"\report\episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_v), str(avg_a), str(avg_l), str(self.ep_step)])
+      #updateReport("/report/episode_report.csv", [time, str(self.t), str(total_r), str(avg_r), str(avg_q), str(avg_v), str(avg_a), str(avg_l)])
       print("*-------------------------------------------------*")
       print("")
 
