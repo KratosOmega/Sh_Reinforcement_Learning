@@ -456,17 +456,17 @@ def test_sars():
 def collect_traffic_data():
     max_episodes = 10000
     max_steps = 200
-    speed = [70, 70, 70]
+    speed = [75, 75, 75]
 
     vissim = Vissim()
     vissim.record_traffic_no_sh(max_episodes, max_steps, speed)
 
 
-"""
+#"""
 # --------------------------------------------------------------------------------
 if __name__ == '__main__':
     # ------------------------ testing sars data flow
     #test_sars()
     # ------------------------ collect traffic discharging rate w/o SH
     collect_traffic_data()
-"""
+#"""
