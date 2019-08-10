@@ -419,13 +419,16 @@ class Vissim:
             print("---------------------------- " + str(episode))
             cumulative_r = 0
 
-            for t in range(0, max_steps):
-                reward = self.traffic_no_sh(speed)
-                cumulative_r += reward
-                gc.collect()
+            try:
+                for t in range(0, max_steps):
+                    reward = self.traffic_no_sh(speed)
+                    cumulative_r += reward
+                    gc.collect()
 
-            avg_r = cumulative_r / max_steps
-            utils.updateReport(r"\report\traffic_no_sh_report.csv", [avg_r])
+                avg_r = cumulative_r / max_steps
+                utils.updateReport(r"\report\traffic_no_sh_report.csv", [avg_r])
+            except:
+                print("----------------------- oops...")
 
 
 # ###############################################################################
@@ -456,17 +459,17 @@ def test_sars():
 def collect_traffic_data():
     max_episodes = 10000
     max_steps = 200
-    speed = [70, 70, 70]
+    speed = [75, 75, 75]
 
     vissim = Vissim()
     vissim.record_traffic_no_sh(max_episodes, max_steps, speed)
 
 
-"""
+#"""
 # --------------------------------------------------------------------------------
 if __name__ == '__main__':
     # ------------------------ testing sars data flow
     #test_sars()
     # ------------------------ collect traffic discharging rate w/o SH
     collect_traffic_data()
-"""
+#"""
