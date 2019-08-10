@@ -419,13 +419,16 @@ class Vissim:
             print("---------------------------- " + str(episode))
             cumulative_r = 0
 
-            for t in range(0, max_steps):
-                reward = self.traffic_no_sh(speed)
-                cumulative_r += reward
-                gc.collect()
+            try:
+                for t in range(0, max_steps):
+                    reward = self.traffic_no_sh(speed)
+                    cumulative_r += reward
+                    gc.collect()
 
-            avg_r = cumulative_r / max_steps
-            utils.updateReport(r"\report\traffic_no_sh_report.csv", [avg_r])
+                avg_r = cumulative_r / max_steps
+                utils.updateReport(r"\report\traffic_no_sh_report.csv", [avg_r])
+            except:
+                print("----------------------- oops...")
 
 
 # ###############################################################################
