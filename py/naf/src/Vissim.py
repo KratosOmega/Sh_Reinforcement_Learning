@@ -15,7 +15,7 @@ class Vissim:
         self.SimRes = 5
         self.RandSeed = 54
         self.DataCollectionInterval = 60
-        self.volume = 5000 #5000
+        self.volume = 8000 #5000
         # -----------------------------------------------------------------------------------
         self.vissim.LoadNet(self.NetworkPath)
         self.vissim.LoadLayout(self.LayoutPath)
