@@ -22,7 +22,12 @@ class Statistic(object):
 
     self.model_dir = model_dir
     self.saver = tf.compat.v1.train.Saver(variables + [self.t_op], max_to_keep=max_to_keep)
-    
+
+    # add line spliter to report
+    updateReport(r"\report\episode_report.csv", ["===========================================" + str(datetime.datetime.now())])
+    #updateReport("/report/episode_report.csv", ["===========================================" + str(datetime.datetime.now())])
+
+    """
     #self.writer = tf.compat.v1.summary.FileWriter('./logs/%s' % self.model_dir, self.sess.graph)
     self.writer = tf.compat.v1.summary.FileWriter('./logs/model_summary.txt')
 
@@ -35,10 +40,7 @@ class Statistic(object):
       for tag in scalar_summary_tags:
         self.summary_placeholders[tag] = tf.compat.v1.placeholder('float32', None, name=tag.replace(' ', '_'))
         self.summary_ops[tag]  = tf.compat.v1.summary.scalar('%s/%s' % (self.env_name, tag), self.summary_placeholders[tag])
-
-    # add line spliter to report
-    updateReport(r"\report\episode_report.csv", ["===========================================" + str(datetime.datetime.now())])
-    #updateReport("/report/episode_report.csv", ["===========================================" + str(datetime.datetime.now())])    
+    """
 
   def reset(self):
     self.total_q = 0.
@@ -88,19 +90,14 @@ class Statistic(object):
         self.save_model(self.t)
         self.max_avg_r = max(self.max_avg_r, avg_r)
 
+      """
       self.inject_summary({
         'total r': total_r, 'avg r': avg_r,
         'avg q': avg_q, 'avg v': avg_v, 'avg a': avg_a, 'avg l': avg_l,
       }, self.t)
+      """
 
       self.reset()
-
-  def inject_summary(self, tag_dict, t):
-    summary_str_lists = self.sess.run([self.summary_ops[tag] for tag in tag_dict.keys()], {
-      self.summary_placeholders[tag]: value for tag, value in tag_dict.items()
-    })
-    for summary_str in summary_str_lists:
-      self.writer.add_summary(summary_str, t)
 
   def save_model(self, t):
     logger.info("Saving checkpoints...")
@@ -124,3 +121,12 @@ class Statistic(object):
       logger.info("Load FAILED: %s" % self.model_dir)
 
     self.t = self.t_add_op.eval(session=self.sess)
+
+  """
+  def inject_summary(self, tag_dict, t):
+    summary_str_lists = self.sess.run([self.summary_ops[tag] for tag in tag_dict.keys()], {
+      self.summary_placeholders[tag]: value for tag, value in tag_dict.items()
+    })
+    for summary_str in summary_str_lists:
+      self.writer.add_summary(summary_str, t)
+  """

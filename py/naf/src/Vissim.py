@@ -333,7 +333,7 @@ class Vissim:
         discharging_rate = self.calc_flow_rate(vehs_pass_to_bn, self.DataCollectionInterval)
 
         #------------------------------------------------------------------------------------ reward logic blcok
-        """
+
         # no shock wave involved logic
 
         reward = round(discharging_rate / self.volume, 4)
@@ -349,7 +349,7 @@ class Vissim:
             reward = round(discharging_rate / (self.volume * 1.5), 4) # TODO: find a better flow_rate threshold for shock wave
         else:
             reward = round(discharging_rate / self.volume, 4)
-
+        """
         #------------------------------------------------------------------------------------
 
         vehs_pass_to_acc = self.get_current_data_collection_result_vehs(1)

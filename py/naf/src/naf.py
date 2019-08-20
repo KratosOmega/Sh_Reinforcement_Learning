@@ -13,7 +13,7 @@ class NAF(object):
   def __init__(self, sess,
                env, strategy, pred_network, target_network, stat,
                discount, batch_size, learning_rate,
-               max_steps, update_repeat, max_episodes):
+               max_steps, update_steps, max_episodes):
     self.sess = sess
     self.env = env
     self.strategy = strategy
@@ -27,7 +27,7 @@ class NAF(object):
     self.action_size = env.action_space.shape[0]
 
     self.max_steps = max_steps
-    self.update_repeat = update_repeat
+    self.update_steps = update_steps
     self.max_episodes = max_episodes
 
     self.prestates = []
@@ -42,12 +42,9 @@ class NAF(object):
     with tf.name_scope('optimizer'):
       self.target_y = tf.compat.v1.placeholder(tf.float32, [None], name='target_y')
       self.loss = tf.reduce_mean(tf.math.squared_difference(self.target_y, tf.squeeze(self.pred_network.Q)), name='loss')
-
       self.optim = tf.compat.v1.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
 
   def run(self, is_train=True):
-    print("------------------------------------ 1")
-
     self.stat.load_model()
     self.target_network.hard_copy_from(self.pred_network)
 
@@ -57,7 +54,7 @@ class NAF(object):
 
       for t in range(0, self.max_steps):
         # 1. predict
-        action = self.predict(state)
+        action = self.get_action(state)
 
         # 2. step
         self.prestates.append(state)
@@ -65,18 +62,20 @@ class NAF(object):
         # transform actions into vissim version
         action = np.clip(action, -1, 1)
         transformed_action = self.convert_actions(action)
-
         state, reward, terminal = self.env.step(transformed_action)
-
         cumulative_r += reward
 
+        """
         print("---------------------------" + str(t))
         print(state)
         print(transformed_action)
         print(reward)
         print(cumulative_r / (t + 1))
         print("")
+        """
 
+        self.rewards.append(reward)
+        self.actions.append(action)
         self.poststates.append(state)
 
         # ----------------------------------------------------------------------- termination logic block
@@ -95,7 +94,7 @@ class NAF(object):
 
         # 3. perceive
         if is_train:
-          q, v, a, l = self.perceive(state, reward, action, terminal)
+          q, v, a, l = self.q_learning_minibatch()
 
           if self.stat:
             self.stat.on_step(action, reward, terminal, q, v, a, l)
@@ -107,6 +106,76 @@ class NAF(object):
         # garbage recycling
         gc.collect()
 
+  def get_action(self, state):
+    u = self.pred_network.predict_u([state])[0]
+    return self.strategy.add_noise(u, {'idx_episode': self.idx_episode})
+
+  def q_learning_minibatch(self):
+    q_list = []
+    v_list = []
+    a_list = []
+    l_list = []
+
+    for iteration in range(self.update_steps):
+      if len(self.rewards) >= self.batch_size:
+        indexes = np.random.choice(len(self.rewards), size=self.batch_size)
+      else:
+        indexes = np.arange(len(self.rewards))
+
+      x_t = np.array(self.prestates)[indexes]
+      x_t_plus_1 = np.array(self.poststates)[indexes]
+      r_t = np.array(self.rewards)[indexes]
+      u_t = np.array(self.actions)[indexes]
+
+      v = self.target_network.predict_v(x_t_plus_1, u_t)
+      target_y = self.discount * np.squeeze(v) + r_t
+
+      _, l, q, v, a = self.sess.run([
+        self.optim,
+        self.loss, self.pred_network.Q, self.pred_network.V, self.pred_network.A,
+      ], {
+        self.target_y: target_y,
+        self.pred_network.x: x_t,
+        self.pred_network.u: u_t,
+        self.pred_network.is_train: True,
+      })
+
+      q_list.extend(q)
+      v_list.extend(v)
+      a_list.extend(a)
+      l_list.append(l)
+
+      self.target_network.soft_update(self.pred_network)
+
+      logger.debug("q: %s, v: %s, a: %s, l: %s" % (np.mean(q), np.mean(v), np.mean(a), np.mean(l)))
+
+    return np.sum(q_list), np.sum(v_list), np.sum(a_list), np.sum(l_list)
+
+  def convert_actions(self, actions):
+    action_space = 19 # [30, 120]
+    min_speed = 30
+    max_speed = 120
+    min_output = -1 # tanh
+    #min_output = 0 # sigmoid
+    max_output = 1
+    output_range = max_output - min_output
+    mapping_size = output_range / action_space
+    speed_limits = []
+
+    for a in actions:
+      action = int((a + 1) / mapping_size) # tanh
+      #action = int(a / mapping_size) # sigmoid
+      speed = int(30 + action * 5)
+
+      if speed > max_speed:
+        speed = max_speed
+      if speed < min_speed:
+        speed = min_speed
+      speed_limits.append(speed)
+
+    return speed_limits
+
+"""
   def run2(self, monitor=False, display=False, is_train=True):
     print("------------------------------------ 2")
 
@@ -159,7 +228,7 @@ class NAF(object):
 
         if len(prestates) > 10:
           loss_ = 0
-          for k in range(self.update_repeat):
+          for k in range(self.update_steps):
             if len(prestates) > self.batch_size:
               indexes = np.random.choice(len(prestates), size=self.batch_size)
             else:
@@ -186,80 +255,4 @@ class NAF(object):
       total_reward += episode_reward
 
     print("Average reward per episode {}".format(total_reward / self.episodes))
-
-  def predict(self, state):
-    u = self.pred_network.predict([state])[0]
-
-    return self.strategy.add_noise(u, {'idx_episode': self.idx_episode})
-
-  def perceive(self, state, reward, action, terminal):
-    self.rewards.append(reward)
-    self.actions.append(action)
-
-    return self.q_learning_minibatch()
-
-  def q_learning_minibatch(self):
-    q_list = []
-    v_list = []
-    a_list = []
-    l_list = []
-
-    for iteration in range(self.update_repeat):
-      if len(self.rewards) >= self.batch_size:
-        indexes = np.random.choice(len(self.rewards), size=self.batch_size)
-      else:
-        indexes = np.arange(len(self.rewards))
-
-      x_t = np.array(self.prestates)[indexes]
-      x_t_plus_1 = np.array(self.poststates)[indexes]
-      r_t = np.array(self.rewards)[indexes]
-      u_t = np.array(self.actions)[indexes]
-
-      v = self.target_network.predict_v(x_t_plus_1, u_t)
-      target_y = self.discount * np.squeeze(v) + r_t
-
-      _, l, q, v, a = self.sess.run([
-        self.optim, self.loss,
-        self.pred_network.Q, self.pred_network.V, self.pred_network.A,
-      ], {
-        self.target_y: target_y,
-        self.pred_network.x: x_t,
-        self.pred_network.u: u_t,
-        self.pred_network.is_train: True,
-      })
-
-      q_list.extend(q)
-      v_list.extend(v)
-      a_list.extend(a)
-      l_list.append(l)
-
-      self.target_network.soft_update_from(self.pred_network)
-
-      logger.debug("q: %s, v: %s, a: %s, l: %s" \
-        % (np.mean(q), np.mean(v), np.mean(a), np.mean(l)))
-
-    return np.sum(q_list), np.sum(v_list), np.sum(a_list), np.sum(l_list)
-
-  def convert_actions(self, actions):
-        action_space = 19 # [30, 120]
-        min_speed = 30
-        max_speed = 120
-        min_output = -1 # tanh
-        #min_output = 0 # sigmoid
-        max_output = 1
-        output_range = max_output - min_output
-        mapping_size = output_range / action_space
-        speed_limits = []
-
-        for a in actions:
-            action = int((a + 1) / mapping_size) # tanh
-            #action = int(a / mapping_size) # sigmoid
-            speed = int(30 + action * 5)
-
-            if speed > max_speed:
-                speed = max_speed
-            if speed < min_speed:
-                speed = min_speed
-            speed_limits.append(speed)
-
-        return speed_limits
+"""

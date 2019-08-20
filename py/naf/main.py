@@ -19,7 +19,7 @@ flags.DEFINE_string('env_name', 'Pendulum-v0', 'Vissim')
 
 # network
 # ------------------------------------------------------------------------------------ hidden_dims selection
-flags.DEFINE_string('hidden_dims', '[5, 5]', 'dimension of hidden layers')
+flags.DEFINE_string('hidden_dims', '[30, 30]', 'dimension of hidden layers')
 #flags.DEFINE_string('hidden_dims', '[7, 14]', 'dimension of hidden layers')
 #flags.DEFINE_string('hidden_dims', '[70, 140]', 'dimension of hidden layers')
 #flags.DEFINE_string('hidden_dims', '[700, 1400]', 'dimension of hidden layers')
@@ -27,7 +27,7 @@ flags.DEFINE_string('hidden_dims', '[5, 5]', 'dimension of hidden layers')
 # ------------------------------------------------------------------------------------
 flags.DEFINE_boolean('use_batch_norm', False, 'use batch normalization or not')
 flags.DEFINE_boolean('clip_action', False, 'whether to clip an action with given bound')
-flags.DEFINE_boolean('use_seperate_networks', False, 'use seperate networks for mu, V and A')
+flags.DEFINE_boolean('use_seperate_networks', True, 'use seperate networks for mu, V and A')
 flags.DEFINE_string('hidden_w', 'uniform_big', 'weight initialization of hidden layers [uniform_small, uniform_big, he]')
 flags.DEFINE_string('hidden_fn', 'tanh', 'activation function of hidden layer [none, tanh, relu]')
 flags.DEFINE_string('action_w', 'uniform_big', 'weight initilization of action layer [uniform_small, uniform_big, he]')
@@ -44,8 +44,12 @@ flags.DEFINE_float('tau', 0.001, 'tau of soft target update')
 flags.DEFINE_float('discount', 0.99, 'discount factor of Q-learning')
 flags.DEFINE_float('learning_rate', 1e-3, 'value of learning rate')
 flags.DEFINE_integer('batch_size', 100, 'The size of batch for minibatch training')
-flags.DEFINE_integer('max_steps', 200, 'maximum # of steps for each episode')
-flags.DEFINE_integer('update_repeat', 10, 'maximum # of q-learning updates for each step')
+
+flags.DEFINE_integer('max_steps', 5, 'maximum # of steps for each episode')
+flags.DEFINE_integer('update_steps', 2, 'maximum # of q-learning updates for each step')
+#flags.DEFINE_integer('max_steps', 200, 'maximum # of steps for each episode')
+#flags.DEFINE_integer('update_steps', 10, 'maximum # of q-learning updates for each step')
+
 flags.DEFINE_integer('max_episodes', 10000, 'maximum # of episodes to train')
 
 # Debug
@@ -108,14 +112,15 @@ def main(_):
     target_network = Network(
       scope='target_network', **shared_args
     )
-    target_network.make_soft_update_from(pred_network, conf.tau)
+    
+    target_network.soft_update_op(pred_network, conf.tau)
 
     # statistic
-    stat = Statistic(sess, conf.env_name, model_dir, pred_network.variables, conf.update_repeat)
+    stat = Statistic(sess, conf.env_name, model_dir, pred_network.variables, conf.update_steps)
 
     agent = NAF(sess, env, strategy, pred_network, target_network, stat,
                 conf.discount, conf.batch_size, conf.learning_rate,
-                conf.max_steps, conf.update_repeat, conf.max_episodes)
+                conf.max_steps, conf.update_steps, conf.max_episodes)
 
     agent.run(conf.is_train)
     #agent.run2(conf.is_train)

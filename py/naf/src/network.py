@@ -12,6 +12,8 @@ class Network:
                hidden_w, action_w, hidden_fn, action_fn, w_reg,
                scope='NAF'):
     self.sess = sess
+    self.updates = {}
+
     with tf.compat.v1.variable_scope(scope):
       x = tf.compat.v1.placeholder(tf.float32, (None,) + tuple(input_shape), name='observations')
       u = tf.compat.v1.placeholder(tf.float32, (None, action_size), name='actions')
@@ -88,15 +90,49 @@ class Network:
     self.x, self.u, self.mu, self.V, self.Q, self.P, self.A = x, u, mu, V, Q, P, A
 
   def predict_v(self, x, u):
+    """
     return self.sess.run(self.V, {
       self.x: x, self.u: u, self.is_train: False,
     })
+    """
+    return self.sess.run(self.V, {
+      self.x: x, self.is_train: False,
+    })
 
-  def predict(self, state):
+  def predict_u(self, state):
     return self.sess.run(self.mu, {
       self.x: state, self.is_train: False
     })
 
+  def soft_update_op(self, network, tau):
+    logger.info("Creating ops for soft target update...")
+    assert len(network.variables) == len(self.variables), \
+      "target and prediction network should have same # of variables"
+
+    for from_, to_ in zip(network.variables, self.variables):
+      self.updates[to_.name] = to_.assign(tau * from_ + (1-tau) * to_)
+
+      """
+      if 'BatchNorm' in to_.name:
+        self.updates[to_.name] = to_.assign(from_)
+      else:
+        self.updates[to_.name] = to_.assign(tau * from_ + (1-tau) * to_)
+      """
+
+  def hard_copy_from(self, network):
+    logger.info("Creating ops for hard target update...")
+    assert len(network.variables) == len(self.variables), \
+      "target and prediction network should have same # of variables"
+
+    for from_, to_ in zip(network.variables, self.variables):
+      self.sess.run(to_.assign(from_))
+
+  def soft_update(self, network):
+    for variable in self.variables:
+      self.sess.run(self.updates[variable.name])
+    return True
+
+"""
   def update(self, optim, target_v, x_t, u_t):
     _, q, v, a, l = self.sess.run([
         optim, self.Q, self.V, self.A, self.loss
@@ -107,28 +143,4 @@ class Network:
         self.is_train: True,
       })
     return q, v, a, l
-
-  def make_soft_update_from(self, network, tau):
-    logger.info("Creating ops for soft target update...")
-    assert len(network.variables) == len(self.variables), \
-      "target and prediction network should have same # of variables"
-
-    self.assign_op = {}
-    for from_, to_ in zip(network.variables, self.variables):
-      if 'BatchNorm' in to_.name:
-        self.assign_op[to_.name] = to_.assign(from_)
-      else:
-        self.assign_op[to_.name] = to_.assign(tau * from_ + (1-tau) * to_)
-
-  def hard_copy_from(self, network):
-    logger.info("Creating ops for hard target update...")
-    assert len(network.variables) == len(self.variables), \
-      "target and prediction network should have same # of variables"
-
-    for from_, to_ in zip(network.variables, self.variables):
-      self.sess.run(to_.assign(from_))
-
-  def soft_update_from(self, network):
-    for variable in self.variables:
-      self.sess.run(self.assign_op[variable.name])
-    return True
+"""
