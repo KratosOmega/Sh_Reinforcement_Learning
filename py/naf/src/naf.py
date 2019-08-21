@@ -44,17 +44,19 @@ class NAF(object):
       self.loss = tf.reduce_mean(tf.math.squared_difference(self.target_y, tf.squeeze(self.pred_network.Q)), name='loss')
       self.optim = tf.compat.v1.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
 
-  def run(self, is_train=True):
+  def run(self, is_train=True): # random at iteration lvl
     self.stat.load_model()
     self.target_network.hard_copy_from(self.pred_network)
 
+    # ====================================================================== M
     for self.idx_episode in range(self.max_episodes):
       state = self.env.reset(self.speed_input)
       cumulative_r = 0
 
+      # ==================================================================== T
       for t in range(0, self.max_steps):
         # 1. predict
-        action = self.get_action(state)
+        action = self.get_action_with_noise(state)
 
         # 2. step
         self.prestates.append(state)
@@ -65,8 +67,8 @@ class NAF(object):
         state, reward, terminal = self.env.step(transformed_action)
         cumulative_r += reward
 
-        """
         print("---------------------------" + str(t))
+        """
         print(state)
         print(transformed_action)
         print(reward)
@@ -94,6 +96,7 @@ class NAF(object):
 
         # 3. perceive
         if is_train:
+          # ================================================================ I
           q, v, a, l = self.q_learning_minibatch()
 
           if self.stat:
@@ -106,9 +109,82 @@ class NAF(object):
         # garbage recycling
         gc.collect()
 
-  def get_action(self, state):
+
+  def run_random_at_episode_lvl(self, is_train=True):
+    self.stat.load_model()
+    self.target_network.hard_copy_from(self.pred_network)
+
+    # ====================================================================== M
+    for self.idx_episode in range(self.max_episodes):
+      state = self.env.reset(self.speed_input)
+      noise = self.get_noise(state)
+      cumulative_r = 0
+      # ==================================================================== T
+      for t in range(0, self.max_steps):
+        # 1. predict
+        raw_action = self.get_action(state)
+        action = raw_action + noise
+
+        # 2. step
+        self.prestates.append(state)
+
+        # transform actions into vissim version
+        action = np.clip(action, -1, 1)
+        transformed_action = self.convert_actions(action)
+        state, reward, terminal = self.env.step(transformed_action)
+        cumulative_r += reward
+
+        print("---------------------------" + str(t))
+        """
+        print(state)
+        print(transformed_action)
+        print(reward)
+        print(cumulative_r / (t + 1))
+        print("")
+        """
+
+        self.rewards.append(reward)
+        self.actions.append(action)
+        self.poststates.append(state)
+
+        # ----------------------------------------------------------------------- termination logic block
+        """
+        # using only one desired reward to terminate
+        terminal = True if t == self.max_steps - 1 else terminal
+        """
+
+        # using only average desired reward to terminate
+        #if t == self.max_steps - 1 or (cumulative_r / (t + 1) > self.termination_threshold and t > 10):
+        if t == self.max_steps - 1:
+          terminal = True
+        else:
+          terminal = False
+        # -----------------------------------------------------------------------
+
+        # 3. perceive
+        if is_train:
+          # ================================================================ I
+          q, v, a, l = self.q_learning_minibatch()
+
+          if self.stat:
+            self.stat.on_step(action, reward, terminal, q, v, a, l)
+
+        if terminal:
+          self.strategy.reset()
+          break
+
+        # garbage recycling
+        gc.collect()
+
+  def get_action_with_noise(self, state):
     u = self.pred_network.predict_u([state])[0]
     return self.strategy.add_noise(u, {'idx_episode': self.idx_episode})
+
+  def get_noise(self, state):
+    return self.strategy.add_noise(env.action_space, {'idx_episode': self.idx_episode})
+
+  def get_action(self, state):
+    return self.pred_network.predict_u([state])[0]
 
   def q_learning_minibatch(self):
     q_list = []

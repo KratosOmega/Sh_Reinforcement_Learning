@@ -16,6 +16,8 @@ class Vissim:
         self.RandSeed = 54
         self.DataCollectionInterval = 60
         self.volume = 5000 #5000
+        #self.normalized_factor = self.volume
+        self.normalized_factor = 5000
         # -----------------------------------------------------------------------------------
         self.vissim.LoadNet(self.NetworkPath)
         self.vissim.LoadLayout(self.LayoutPath)
@@ -29,6 +31,7 @@ class Vissim:
         self.state_space = np.ndarray(shape=(7,), dtype=float)
         # 3 action = speed_limit_1, speed_limit_2, speed_limit_3
         self.action_space = np.ndarray(shape=(3,), dtype=float)
+
         self.reward_threshold = 0.95 # desired max discharging rate
         self.input_flow_rate = 0 # keep track current upstream flow rate
 
@@ -314,7 +317,7 @@ class Vissim:
         density1 = round(density1 / acc_length, 4)
         density2 = round(density2 / acc_length, 4)
         density3 = round(density3 / acc_length, 4)
-        normalized_flow_rate = round(flow_rate / self.volume, 4)
+        normalized_flow_rate = round(flow_rate / self.normalized_factor, 4)
         # ----------------------------------------------------------
 
         state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3, density1, density2, density3])
@@ -336,7 +339,7 @@ class Vissim:
 
         # no shock wave involved logic
 
-        reward = round(discharging_rate / self.volume, 4)
+        reward = round(discharging_rate / self.normalized_factor, 4)
 
         # ###################################################################################
         
@@ -346,9 +349,9 @@ class Vissim:
         diff = discharging_rate - self.input_flow_rate
         if diff > 0:
             print("-------- shock wave warning, applied penalty!")
-            reward = round(discharging_rate / (self.volume * 1.5), 4) # TODO: find a better flow_rate threshold for shock wave
+            reward = round(discharging_rate / (self.normalized_factor * 1.5), 4) # TODO: find a better flow_rate threshold for shock wave
         else:
-            reward = round(discharging_rate / self.volume, 4)
+            reward = round(discharging_rate / self.normalized_factor, 4)
         """
         #------------------------------------------------------------------------------------
 
@@ -369,7 +372,7 @@ class Vissim:
         density1 = round(density1 / acc_length, 4)
         density2 = round(density2 / acc_length, 4)
         density3 = round(density3 / acc_length, 4)
-        normalized_flow_rate = round(flow_rate / self.volume, 4)
+        normalized_flow_rate = round(flow_rate / self.normalized_factor, 4)
         # ----------------------------------------------------------
 
         # set state (flow rate, density of [SH, Acc])
@@ -396,7 +399,7 @@ class Vissim:
 
         # no shock wave involved logic
 
-        reward = round(discharging_rate / self.volume, 4)
+        reward = round(discharging_rate / self.normalized_factor, 4)
 
         # ###################################################################################
 
@@ -406,9 +409,9 @@ class Vissim:
         diff = discharging_rate - self.input_flow_rate
         if diff > 0:
             print("-------- shock wave warning, applied penalty!")
-            reward = round(discharging_rate / (self.volume * 1.5), 4) # TODO: find a better flow_rate threshold for shock wave
+            reward = round(discharging_rate / (self.normalized_factor * 1.5), 4) # TODO: find a better flow_rate threshold for shock wave
         else:
-            reward = round(discharging_rate / self.volume, 4)
+            reward = round(discharging_rate / self.normalized_factor, 4)
         """
         #------------------------------------------------------------------------------------
 

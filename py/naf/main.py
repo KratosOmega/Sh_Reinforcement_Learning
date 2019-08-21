@@ -20,10 +20,6 @@ flags.DEFINE_string('env_name', 'Pendulum-v0', 'Vissim')
 # network
 # ------------------------------------------------------------------------------------ hidden_dims selection
 flags.DEFINE_string('hidden_dims', '[30, 30]', 'dimension of hidden layers')
-#flags.DEFINE_string('hidden_dims', '[7, 14]', 'dimension of hidden layers')
-#flags.DEFINE_string('hidden_dims', '[70, 140]', 'dimension of hidden layers')
-#flags.DEFINE_string('hidden_dims', '[700, 1400]', 'dimension of hidden layers')
-#flags.DEFINE_string('hidden_dims', '[100, 200]', 'dimension of hidden layers')
 # ------------------------------------------------------------------------------------
 flags.DEFINE_boolean('use_batch_norm', False, 'use batch normalization or not')
 flags.DEFINE_boolean('clip_action', False, 'whether to clip an action with given bound')
@@ -45,11 +41,8 @@ flags.DEFINE_float('discount', 0.99, 'discount factor of Q-learning')
 flags.DEFINE_float('learning_rate', 1e-3, 'value of learning rate')
 flags.DEFINE_integer('batch_size', 100, 'The size of batch for minibatch training')
 
-flags.DEFINE_integer('max_steps', 5, 'maximum # of steps for each episode')
-flags.DEFINE_integer('update_steps', 2, 'maximum # of q-learning updates for each step')
-#flags.DEFINE_integer('max_steps', 200, 'maximum # of steps for each episode')
-#flags.DEFINE_integer('update_steps', 10, 'maximum # of q-learning updates for each step')
-
+flags.DEFINE_integer('max_steps', 200, 'maximum # of steps for each episode')
+flags.DEFINE_integer('update_steps', 100, 'maximum # of q-learning updates for each step')
 flags.DEFINE_integer('max_episodes', 10000, 'maximum # of episodes to train')
 
 # Debug
