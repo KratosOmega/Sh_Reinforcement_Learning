@@ -135,13 +135,11 @@ class NAF(object):
         cumulative_r += reward
 
         print("---------------------------" + str(t))
-        """
         print(state)
         print(transformed_action)
         print(reward)
         print(cumulative_r / (t + 1))
         print("")
-        """
 
         self.rewards.append(reward)
         self.actions.append(action)
