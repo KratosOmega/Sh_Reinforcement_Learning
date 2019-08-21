@@ -179,7 +179,7 @@ class NAF(object):
     return self.strategy.add_noise(u, {'idx_episode': self.idx_episode})
 
   def get_noise(self, state):
-    return self.strategy.add_noise(env.action_space, {'idx_episode': self.idx_episode})
+    return self.strategy.add_noise(self.env.action_space, {'idx_episode': self.idx_episode})
 
   def get_action(self, state):
     return self.pred_network.predict_u([state])[0]
