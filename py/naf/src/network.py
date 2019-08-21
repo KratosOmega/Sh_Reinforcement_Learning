@@ -90,18 +90,14 @@ class Network:
     self.x, self.u, self.mu, self.V, self.Q, self.P, self.A = x, u, mu, V, Q, P, A
 
   def predict_v(self, x, u):
-    """
     return self.sess.run(self.V, {
-      self.x: x, self.u: u, self.is_train: False,
-    })
-    """
-    return self.sess.run(self.V, {
+      #self.x: x, self.u: u, self.is_train: False,
       self.x: x, self.is_train: False,
     })
 
-  def predict_u(self, state):
+  def predict_u(self, x):
     return self.sess.run(self.mu, {
-      self.x: state, self.is_train: False
+      self.x: x, self.is_train: False
     })
 
   def soft_update_op(self, network, tau):
