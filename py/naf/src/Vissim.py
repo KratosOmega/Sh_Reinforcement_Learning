@@ -15,7 +15,7 @@ class Vissim:
         self.SimRes = 5
         self.RandSeed = 54
         self.DataCollectionInterval = 60
-        self.volume = 5000 #5000
+        self.volume = 7000 # total car input
         #self.normalized_factor = self.volume
         self.normalized_factor = 5000
         # -----------------------------------------------------------------------------------
