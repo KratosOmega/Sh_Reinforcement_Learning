@@ -199,9 +199,9 @@
 		</dataCollectionMeasurement>
 	</dataCollectionMeasurements>
 	<dataCollectionPoints>
-		<dataCollectionPoint lane="1 3" name="" no="1" pos="421"/>
-		<dataCollectionPoint lane="1 2" name="" no="2" pos="421"/>
-		<dataCollectionPoint lane="1 1" name="" no="3" pos="421"/>
+		<dataCollectionPoint lane="1 3" name="" no="1" pos="1824.3774211183006"/>
+		<dataCollectionPoint lane="1 2" name="" no="2" pos="1824.3774211183006"/>
+		<dataCollectionPoint lane="1 1" name="" no="3" pos="1824.3774211183006"/>
 		<dataCollectionPoint lane="3 3" name="" no="4" pos="650"/>
 		<dataCollectionPoint lane="3 2" name="" no="5" pos="650"/>
 		<dataCollectionPoint lane="3 1" name="" no="6" pos="650"/>
@@ -572,39 +572,39 @@
 		</desDecelerationFunction>
 	</desDecelerationFunctions>
 	<desSpeedDecisions>
-		<desSpeedDecision anmFlag="false" lane="1 1" name="initial_speed_1" no="1" pos="5" timeFrom="0" timeTo="99999">
+		<desSpeedDecision anmFlag="false" lane="1 1" name="initial_speed_1" no="1" pos="9.6241332771795953" timeFrom="0" timeTo="99999">
 			<vehClassDesSpeedDistr>
 				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="10"/>
 				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="70"/>
 			</vehClassDesSpeedDistr>
 		</desSpeedDecision>
-		<desSpeedDecision anmFlag="false" lane="1 2" name="initial_speed_2" no="2" pos="5" timeFrom="0" timeTo="99999">
-			<vehClassDesSpeedDistr>
-				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="10"/>
-				<vehClassDesSpeedDistribution desSpeedDistr="770" vehClass="30"/>
-				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="70"/>
-			</vehClassDesSpeedDistr>
-		</desSpeedDecision>
-		<desSpeedDecision anmFlag="false" lane="1 3" name="initial_speed_3" no="3" pos="5" timeFrom="0" timeTo="99999">
-			<vehClassDesSpeedDistr>
-				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="10"/>
-				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="70"/>
-			</vehClassDesSpeedDistr>
-		</desSpeedDecision>
-		<desSpeedDecision anmFlag="false" lane="1 1" name=" speed_limit_1" no="4" pos="305" timeFrom="0" timeTo="99999">
-			<vehClassDesSpeedDistr>
-				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="10"/>
-				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="70"/>
-			</vehClassDesSpeedDistr>
-		</desSpeedDecision>
-		<desSpeedDecision anmFlag="false" lane="1 2" name="speed_limit_2" no="5" pos="305" timeFrom="0" timeTo="99999">
+		<desSpeedDecision anmFlag="false" lane="1 2" name="initial_speed_2" no="2" pos="9.6241332771795953" timeFrom="0" timeTo="99999">
 			<vehClassDesSpeedDistr>
 				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="10"/>
 				<vehClassDesSpeedDistribution desSpeedDistr="770" vehClass="30"/>
 				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="70"/>
 			</vehClassDesSpeedDistr>
 		</desSpeedDecision>
-		<desSpeedDecision anmFlag="false" lane="1 3" name="speed_limit_3" no="6" pos="305" timeFrom="0" timeTo="99999">
+		<desSpeedDecision anmFlag="false" lane="1 3" name="initial_speed_3" no="3" pos="9.6241332771795953" timeFrom="0" timeTo="99999">
+			<vehClassDesSpeedDistr>
+				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="10"/>
+				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="70"/>
+			</vehClassDesSpeedDistr>
+		</desSpeedDecision>
+		<desSpeedDecision anmFlag="false" lane="1 1" name=" speed_limit_1" no="4" pos="36.546039767986038" timeFrom="0" timeTo="99999">
+			<vehClassDesSpeedDistr>
+				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="10"/>
+				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="70"/>
+			</vehClassDesSpeedDistr>
+		</desSpeedDecision>
+		<desSpeedDecision anmFlag="false" lane="1 2" name="speed_limit_2" no="5" pos="36.546039767986038" timeFrom="0" timeTo="99999">
+			<vehClassDesSpeedDistr>
+				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="10"/>
+				<vehClassDesSpeedDistribution desSpeedDistr="770" vehClass="30"/>
+				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="70"/>
+			</vehClassDesSpeedDistr>
+		</desSpeedDecision>
+		<desSpeedDecision anmFlag="false" lane="1 3" name="speed_limit_3" no="6" pos="36.546039767986038" timeFrom="0" timeTo="99999">
 			<vehClassDesSpeedDistr>
 				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="10"/>
 				<vehClassDesSpeedDistribution desSpeedDistr="775" vehClass="70"/>
@@ -1228,8 +1228,8 @@
 		<link assumSpeedOncom="60" consVehInDynPot="false" costPerKm="0" desSpeedFact="1" direction="ALL" displayType="1" emergStopDist="5" gradient="0" hasOvtLn="false" isPedArea="false" level="1" linkBehavType="3" linkEvalAct="true" linkEvalSegLen="10" lnChgDist="200" lnChgDistIsPerLn="false" lnChgEvalAct="true" lookAheadDistOvt="500" mesoFollowUpGap="0" mesoSpeed="50" mesoSpeedModel="VEHICLEBASED" name="speed_harmonization_zone" netPerfEvalAct="true" no="1" ovtOnlyPT="false" ovtSpeedFact="1.3" showClsfValues="true" showLinkBar="true" showVeh="true" surch1="0" surch2="0" thickness="0" vehDynPotG="3" vehRecAct="true">
 			<geometry>
 				<linkPolyPts>
-					<linkPolyPoint x="-378.67901251780182" y="-11.663960322638921" zOffset="0"/>
-					<linkPolyPoint x="119.5148247213815" y="-10.233149798267085" zOffset="0"/>
+					<linkPolyPoint x="-1740.0450319739234" y="-11.172176597908759" zOffset="0"/>
+					<linkPolyPoint x="119.04084977220748" y="-9.7591748490930357" zOffset="0"/>
 				</linkPolyPts>
 			</geometry>
 			<lanes>
@@ -1321,10 +1321,10 @@
 			<toLinkEndPt lane="4 1" pos="0.94823232467625407"/>
 		</link>
 		<link assumSpeedOncom="60" consVehInDynPot="false" costPerKm="0" desSpeedFact="1" direction="ALL" displayType="1" emergStopDist="5" gradient="0" hasOvtLn="false" isPedArea="false" linkBehavType="3" linkEvalAct="true" linkEvalSegLen="10" lnChgDist="200" lnChgDistIsPerLn="false" lnChgEvalAct="true" lookAheadDistOvt="500" mesoFollowUpGap="0" mesoSpeed="50" mesoSpeedModel="VEHICLEBASED" name="" netPerfEvalAct="true" no="10002" ovtOnlyPT="false" ovtSpeedFact="1.3" showClsfValues="true" showLinkBar="true" showVeh="true" surch1="0" surch2="0" thickness="0" vehDynPotG="3" vehRecAct="true">
-			<fromLinkEndPt lane="1 1" pos="494.31886398925883"/>
+			<fromLinkEndPt lane="1 1" pos="1855.5308866512992"/>
 			<geometry>
 				<linkPolyPts>
-					<linkPolyPoint x="115.63781282436571" y="-10.244284559499995" zOffset="0"/>
+					<linkPolyPoint x="115.48531872710191" y="-9.7618772372043274" zOffset="0"/>
 					<linkPolyPoint x="136.62063921135851" y="-9.8208672674817805" zOffset="0"/>
 				</linkPolyPts>
 			</geometry>
@@ -2258,7 +2258,7 @@
 		</vehicleInput>
 	</vehicleInputs>
 	<vehicleRoutingDecisionsStatic>
-		<vehicleRoutingDecisionStatic allVehTypes="true" anmFlag="false" combineStaRoutDec="false" link="1" name="" no="1" pos="18.693187186076589" routeChoiceMeth="STATIC">
+		<vehicleRoutingDecisionStatic allVehTypes="true" anmFlag="false" combineStaRoutDec="false" link="1" name="" no="1" pos="24.413099348856118" routeChoiceMeth="STATIC">
 			<vehClasses>
 				<intObjectRef key="10"/>
 				<intObjectRef key="20"/>
@@ -2281,20 +2281,20 @@
 	</vehicleRoutingDecisionsStatic>
 	<vehicleTravelTimeMeasurements>
 		<vehicleTravelTimeMeasurement name="Travel_Time_ SH Zone" no="1">
-			<end link="1" pos="496"/>
-			<start link="1" pos="6"/>
+			<end link="1" pos="1830.6782913013278"/>
+			<start link="1" pos="10.624133277179595"/>
 		</vehicleTravelTimeMeasurement>
 		<vehicleTravelTimeMeasurement name="Travel_Time_Acceleration Zone" no="2">
-			<end link="3" pos="1348.5267868566032"/>
-			<start link="3" pos="48.526786856603138"/>
+			<end link="3" pos="1464.8011444903391"/>
+			<start link="3" pos="12.015355565267855"/>
 		</vehicleTravelTimeMeasurement>
 		<vehicleTravelTimeMeasurement name="Travel_TIme_acc_to_bn" no="3">
-			<end link="3" pos="1497.3100832177215"/>
-			<start link="3" pos="1457.3100832177215"/>
+			<end link="4" pos="180.59415523545263"/>
+			<start link="3" pos="1470.3127520401003"/>
 		</vehicleTravelTimeMeasurement>
 		<vehicleTravelTimeMeasurement name="Travel_Time_Whole_Network" no="4">
 			<end link="4" pos="523.9447106659278"/>
-			<start link="1" pos="7"/>
+			<start link="1" pos="11.624133277179595"/>
 		</vehicleTravelTimeMeasurement>
 	</vehicleTravelTimeMeasurements>
 	<vehicleTypes>
