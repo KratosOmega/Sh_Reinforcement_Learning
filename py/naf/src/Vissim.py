@@ -5,8 +5,6 @@ import gc
 import utils
 
 class Vissim:
-
-
     def __init__(self):
         self.vissim = com.dynamic.Dispatch('Vissim.Vissim.1100')
         self.NetworkPath = "C:\\Users\\UAV_MASTER\\Desktop\\_workspace\\Sh_Reinforcement_Learning\\py\\vissim_data\\SH.inpx"
@@ -37,9 +35,6 @@ class Vissim:
 
     def set_w99cc1distr(self, value):
         # value = distance between 2 car (front to back)
-        print("===============================")
-        print(self.vissim.Net.DrivingBehaviors)
-        print("===============================")        
         self.vissim.Net.DrivingBehaviors.ItemByKey(3).SetAttValue("W99cc1Distr", value)
 
     def set_vehicle_input(self, volume):
@@ -419,20 +414,41 @@ class Vissim:
 
     def record_traffic_no_sh(self, max_episodes, max_steps, speed = [70, 70, 70]):
         for episode in range(max_episodes):
-            print("---------------------------- " + str(episode))
-            cumulative_r = 0
 
+            print("---------------------------- " + str(episode))            
+            self.reset(self.random_action(3))
+
+            for t in range(0, max_steps):
+                speed = self.random_action(3)
+                state, reward, _ = self.step(speed)
+                seriz_state = ";".join(map(str, list(state)))
+                seriz_speed = ";".join(map(str, list(speed)))
+                print([seriz_state, seriz_speed, str(reward)])
+                utils.updateReport(r"\dataset\data.csv", [seriz_state, seriz_speed, str(reward)])
+                gc.collect()
+
+            """
             try:
                 for t in range(0, max_steps):
-                    reward = self.traffic_no_sh(speed)
-                    cumulative_r += reward
+                    speed = self.random_action(3)
+                    state, reward, _ = self.step(speed)
+                    seriz_state = ";".join(map(str, list(state)))
+                    seriz_speed = ";".join(map(str, list(speed)))
+                    print([seriz_state, seriz_speed, str(reward)])
+                    utils.updateReport(r"\dataset\data.csv", [seriz_state, seriz_speed, str(reward)])
                     gc.collect()
-
-                avg_r = cumulative_r / max_steps
-                utils.updateReport(r"\report\traffic_no_sh_report.csv", [avg_r])
             except:
                 print("----------------------- oops...")
+            """
 
+    def random_action(self, dim):
+        actions = []
+        action_space = [30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120]
+
+        for d in range(dim):
+            actions.append(random.choice(action_space))
+
+        return np.array(actions)
 
 # ###############################################################################
 # Global method
