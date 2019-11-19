@@ -109,7 +109,7 @@ def online_learning(env, episode, step, gamma=0.9, alpha=0.5, epsilon=0.1, is_lo
     for e in range(episode):
         print(" ###########################: ", str(e))
         cum_reward = 0
-        state = env.reset([70, 70, 70])
+        state = env.reset([110, 110, 110])
 
         for s in range(step):
             print(" ---------------------------: ", str(s))
@@ -200,11 +200,11 @@ if __name__ == '__main__':
     is_load = False
     #env = Env_Test()
 
-    """
+
     env = Vissim()
     online_learning(env, episode, step, gamma, alpha, epsilon, is_load)
     """
     offline_learning(1, step, gamma, alpha, epsilon, is_load)
-
+    """
 
 

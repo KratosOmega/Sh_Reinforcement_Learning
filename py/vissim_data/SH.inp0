@@ -164,14 +164,14 @@
 		<conflictArea addStopDist="0" anticipRout="0" avoidBlockMajor="true" avoidBlockMinor="1" conflTypDetmAuto="true" conflTypMan="CROSSING" frontGapDef="0.5" link1="4" link2="10001" mesoCritGap="3.5" minGapBlockDef="3" no="15" obsAdjLns="false" rearGapDef="0.5" safDistFactDef="1.5" status="PASSIVE" visibLink1="100" visibLink2="100"/>
 	</conflictAreas>
 	<dataCollectionMeasurements>
-		<dataCollectionMeasurement name="SH" no="1"/>
-		<dataCollectionMeasurement name="ACC" no="2">
+		<dataCollectionMeasurement name="SH" no="1">
 			<dataCollectionPoints>
 				<intObjectRef key="4"/>
 				<intObjectRef key="5"/>
 				<intObjectRef key="6"/>
 			</dataCollectionPoints>
 		</dataCollectionMeasurement>
+		<dataCollectionMeasurement name="ACC" no="2"/>
 		<dataCollectionMeasurement name="BOTTLENECK1" no="3">
 			<dataCollectionPoints>
 				<intObjectRef key="7"/>
@@ -1297,7 +1297,7 @@
 			</lanes>
 			<toLinkEndPt lane="3 1" pos="78.654529569431304"/>
 		</link>
-		<link assumSpeedOncom="60" consVehInDynPot="false" costPerKm="0" desSpeedFact="1" direction="ALL" displayType="1" emergStopDist="10" gradient="0" hasOvtLn="false" isPedArea="false" linkBehavType="3" linkEvalAct="true" linkEvalSegLen="10" lnChgDist="1600" lnChgDistIsPerLn="false" lnChgEvalAct="true" lookAheadDistOvt="500" mesoFollowUpGap="0" mesoSpeed="50" mesoSpeedModel="VEHICLEBASED" name="" netPerfEvalAct="true" no="10001" ovtOnlyPT="false" ovtSpeedFact="1.3" showClsfValues="true" showLinkBar="true" showVeh="true" surch1="0" surch2="0" thickness="0" vehDynPotG="3" vehRecAct="true">
+		<link assumSpeedOncom="60" consVehInDynPot="false" costPerKm="0" desSpeedFact="1" direction="ALL" displayType="1" emergStopDist="10" gradient="0" hasOvtLn="false" isPedArea="false" linkBehavType="3" linkEvalAct="true" linkEvalSegLen="10" lnChgDist="1000" lnChgDistIsPerLn="false" lnChgEvalAct="true" lookAheadDistOvt="500" mesoFollowUpGap="0" mesoSpeed="50" mesoSpeedModel="VEHICLEBASED" name="" netPerfEvalAct="true" no="10001" ovtOnlyPT="false" ovtSpeedFact="1.3" showClsfValues="true" showLinkBar="true" showVeh="true" surch1="0" surch2="0" thickness="0" vehDynPotG="3" vehRecAct="true">
 			<fromLinkEndPt lane="3 2" pos="1508.7453556694193"/>
 			<geometry>
 				<linkPolyPts>
@@ -2177,6 +2177,10 @@
 		<timeIntervalSet no="AREABEHAVIORTYPE">
 			<timeInts>
 				<timeInterval start="0"/>
+				<timeInterval start="300"/>
+				<timeInterval start="600"/>
+				<timeInterval start="900"/>
+				<timeInterval start="3600"/>
 			</timeInts>
 		</timeIntervalSet>
 		<timeIntervalSet no="MANAGEDLANESFACILITY">
@@ -2244,7 +2248,7 @@
 	<vehicleInputs>
 		<vehicleInput anmFlag="false" link="1" name="" no="1">
 			<timeIntVehVols>
-				<timeIntervalVehVolume cont="false" timeInt="1 0" vehComp="1" volType="STOCHASTIC" volume="32000"/>
+				<timeIntervalVehVolume cont="false" timeInt="1 0" vehComp="1" volType="STOCHASTIC" volume="8000"/>
 			</timeIntVehVols>
 		</vehicleInput>
 	</vehicleInputs>
