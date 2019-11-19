@@ -7,7 +7,7 @@ class Env_Test(object):
 		self.action_space = np.ndarray(shape=(3,), dtype=float)
 
 	def reset(self):
-		return [1000, 1000, 1000, 1000, 1000, 1000]
+		return [1.5, 0.2, 0.4, 0.4]
 
 	def step(self, a):
-		return [2000, 2000, 2000, 2000, 2000, 2000], 100, False
+		return [1.5, 0.2, 0.4, 0.4], 100

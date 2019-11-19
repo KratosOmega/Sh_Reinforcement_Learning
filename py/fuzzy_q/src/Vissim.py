@@ -315,7 +315,8 @@ class Vissim:
         normalized_flow_rate = round(flow_rate / self.normalized_factor, 4)
         # ----------------------------------------------------------
 
-        state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3, density1, density2, density3])
+        #state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3, density1, density2, density3])
+        state = np.array([normalized_flow_rate, density1, density2, density3])
 
         return state
 
@@ -371,13 +372,15 @@ class Vissim:
         # ----------------------------------------------------------
 
         # set state (flow rate, density of [SH, Acc])
-        state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3, density1, density2, density3])
+        #state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3, density1, density2, density3])
+        state = np.array([normalized_flow_rate, density1, density2, density3])
 
         # set bottle next discharging rate threshold
         #terminal = reward > self.reward_threshold
         terminal = False
 
-        return state, reward, terminal
+        #return state, reward, terminal
+        return state, reward
 
     def traffic_no_sh(self, speed=[70, 70, 70], count=1, run_times=(180*5)):
         self.set_speed("speed_input", speed)
@@ -443,7 +446,7 @@ class Vissim:
 
     def random_action(self, dim):
         actions = []
-        action_space = [30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120]
+        action_space = [40, 50, 60, 70, 80, 90, 100, 110, 120]
 
         for d in range(dim):
             actions.append(random.choice(action_space))

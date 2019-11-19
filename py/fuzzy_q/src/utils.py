@@ -4,6 +4,7 @@ Author: XIN LI
 
 import os
 import csv
+import numpy as np
 
 def updateReport(file_name, entry):
 	path = os.getcwd() + file_name
@@ -23,5 +24,33 @@ def even_dist(bound_l, bound_r, num_members):
 		foot.append([cur_ctr - step, cur_ctr, cur_ctr + step])
 		cur_ctr = cur_ctr + step
 
-	return foot
+	return np.array(foot)
+
+def memb_func_eval(memb_func, val):
+	eval_max = 0
+	output = -1
+	step = memb_func.shape[0]
+	x = []
+	y = []
+
+	for i in range(step):
+		if memb_func[i][0] <= val and val <memb_func[i][2]:
+			if memb_func[i][0] <= val and val <memb_func[i][1]:
+				x.append(memb_func[i][0])
+				x.append(memb_func[i][1])
+				y.append(0)
+				y.append(1)
+			if memb_func[i][1] <= val and val <memb_func[i][2]:
+				x.append(memb_func[i][1])
+				x.append(memb_func[i][2])
+				y.append(1)
+				y.append(0)
+			coefficients = np.polyfit(x, y, 1)
+			poly = np.poly1d(coefficients)
+			val_eval = poly(val)
+			if val_eval > eval_max:
+				eval_max = val_eval
+				output = i
+
+	return output
 
