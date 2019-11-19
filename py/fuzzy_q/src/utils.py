@@ -6,6 +6,26 @@ import os
 import csv
 import numpy as np
 
+def load_data(file_name):
+	dataset = []
+	path = os.getcwd() + file_name
+	with open(path) as fileReader:
+	    csv_reader = csv.reader(fileReader, delimiter=',')
+
+	    for record in csv_reader:
+
+	    	s = list(map(float, record[0].split(";")))
+	    	a = list(map(float, record[1].split(";")))
+	    	r = float(record[2])
+	    	s_ = list(map(float, record[3].split(";")))
+
+	    	dataset.append([s, a, r, s_])
+
+	fileReader.close()
+
+	return dataset
+
+
 def updateReport(file_name, entry):
 	path = os.getcwd() + file_name
 	with open(path, 'a', newline='') as fileWriter:

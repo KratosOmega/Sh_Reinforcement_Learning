@@ -47,8 +47,8 @@ class Vissim:
         self.vissim.Simulation.SetAttValue("randSeed", randSeed) # car stream behavior (how fast car into, how many cars into)
         self.vissim.Simulation.SetAttValue("NumCores", 1)
         self.vissim.Simulation.SetAttValue("UseMaxSimSpeed", True)
-        #self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 1) # Quick Mode (no car visualization)
-        self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 0) # Normal Mode (car visualization)
+        self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 1) # Quick Mode (no car visualization)
+        #self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 0) # Normal Mode (car visualization)
 
     def set_evaluation_atts(self, simPeriod, dataCollectionInterval = 30):
         # |-------|-------|-------|-------|-------| ..... | 5000
@@ -419,15 +419,17 @@ class Vissim:
         for episode in range(max_episodes):
 
             print("---------------------------- " + str(episode))            
-            self.reset(self.random_action(3))
+            s = self.reset(speed)
 
             for t in range(0, max_steps):
-                speed = self.random_action(3)
-                state, reward, _ = self.step(speed)
-                seriz_state = ";".join(map(str, list(state)))
-                seriz_speed = ";".join(map(str, list(speed)))
-                print([seriz_state, seriz_speed, str(reward)])
-                utils.updateReport(r"\dataset\data.csv", [seriz_state, seriz_speed, str(reward)])
+                a = self.random_action(3)
+                s_, reward = self.step(a)
+                seriz_s = ";".join(map(str, list(s)))
+                seriz_a = ";".join(map(str, list(a)))
+                seriz_s_ = ";".join(map(str, list(s_)))
+                print([seriz_s, seriz_a, str(reward), seriz_s_])
+                utils.updateReport(r"\dataset\data.csv", [seriz_s, seriz_a, str(reward), seriz_s_])
+                s = s_
                 gc.collect()
 
             """
@@ -446,7 +448,7 @@ class Vissim:
 
     def random_action(self, dim):
         actions = []
-        action_space = [40, 50, 60, 70, 80, 90, 100, 110, 120]
+        action_space = [30, 40, 50, 60, 70, 80, 90, 100, 110]
 
         for d in range(dim):
             actions.append(random.choice(action_space))
