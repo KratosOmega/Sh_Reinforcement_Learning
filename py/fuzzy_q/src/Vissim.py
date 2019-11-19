@@ -47,8 +47,8 @@ class Vissim:
         self.vissim.Simulation.SetAttValue("randSeed", randSeed) # car stream behavior (how fast car into, how many cars into)
         self.vissim.Simulation.SetAttValue("NumCores", 1)
         self.vissim.Simulation.SetAttValue("UseMaxSimSpeed", True)
-        #self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 1) # Quick Mode (no car visualization)
-        self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 0) # Normal Mode (car visualization)
+        self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 1) # Quick Mode (no car visualization)
+        #self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 0) # Normal Mode (car visualization)
 
     def set_evaluation_atts(self, simPeriod, dataCollectionInterval = 30):
         # |-------|-------|-------|-------|-------| ..... | 5000
@@ -85,7 +85,7 @@ class Vissim:
 
     def set_speed(self, speed_cat, speeds):
         land_id_dict = {
-            "speed_input": [1, 2, 3],
+            "speed_acc": [1, 2, 3],
             "speed_limit": [4, 5, 6],
         }
 
@@ -280,10 +280,10 @@ class Vissim:
         return speed_init + random.randint(step_min, step_max) * speed_interval
 
 
-    def reset(self, actions=[110, 110, 110], count=1, run_times=(180*5)):
+    def reset(self, acc=[120, 120, 120], count=1, run_times=(180*5)):
         # set input speed for SH zone
         self.stop_simulation()
-        self.set_speed("speed_input", actions)
+        self.set_speed("speed_acc", acc)
         flow_rate = 0.0
         density = 0.0
 
@@ -316,7 +316,8 @@ class Vissim:
         return state
 
     def step(self, actions, run_times=(180*5)):
-        self.set_speed("speed_input", actions)
+        self.set_speed("speed_acc", [120, 120, 120])
+        self.set_speed("speed_limit", actions)
         reward = 0
 
         for i in range(0, run_times):
@@ -352,8 +353,6 @@ class Vissim:
         density1 = self.get_all_vehicles_by_lanes(1, 1)
         density2 = self.get_all_vehicles_by_lanes(1, 2)
         density3 = self.get_all_vehicles_by_lanes(1, 3)
-
-        print([density1, density2, density3])
 
         # ---------------------------------------------------------- using normalized densities
         acc_length = 1500
