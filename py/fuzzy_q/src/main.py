@@ -13,10 +13,11 @@ from Vissim import Vissim
 import gc
 # ----------------------------------
 def presetup_separated():
-    input_memb_dim = 3
+    input_memb_dim = 5
     output_memb_dim = 9
+    action_dim = 3
 
-    ufr_memb_func = even_dist(0, 1.5, input_memb_dim)
+    ufr_memb_func = even_dist(0, 7000, input_memb_dim)
     dr1_memb_func = even_dist(0, 1.0, input_memb_dim)
     dr2_memb_func = even_dist(0, 1.0, input_memb_dim)
     dr3_memb_func = even_dist(0, 1.0, input_memb_dim)
@@ -26,7 +27,7 @@ def presetup_separated():
         input_memb_dim, 
         input_memb_dim, 
         input_memb_dim, 
-        input_memb_dim, 
+        action_dim, 
         output_memb_dim)
     )
 
@@ -59,7 +60,7 @@ def online_learning(env, episode, step, gamma=0.9, alpha=0.5, epsilon=0.1, is_lo
             print(" @ state: ", str(s0), str(s1), str(s2), str(s3))
             actions_of_state = qtable[s0][s1][s2][s3]
 
-            if random.random() < epsilon:
+            if random.uniform(0, 1) < epsilon:
                 a0_idx = random.randrange(len(speed_map))
                 a1_idx = random.randrange(len(speed_map))
                 a2_idx = random.randrange(len(speed_map))
@@ -69,6 +70,7 @@ def online_learning(env, episode, step, gamma=0.9, alpha=0.5, epsilon=0.1, is_lo
                 a2_idx = np.where(actions_of_state[2] == np.amax(actions_of_state[2]))[0][0]
                 
             actions = [speed_map[a0_idx], speed_map[a1_idx], speed_map[a2_idx]]
+            print(actions)
 
             next_state, reward = env.step(actions)
 
@@ -130,7 +132,7 @@ if __name__ == '__main__':
     step = 200
     gamma = 0.9
     alpha = 0.5
-    epsilon = 0.1
+    epsilon = 0.2
     is_load = False
     #env = Env_Test()
     env = Vissim()

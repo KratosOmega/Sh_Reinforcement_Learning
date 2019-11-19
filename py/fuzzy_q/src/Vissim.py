@@ -47,8 +47,8 @@ class Vissim:
         self.vissim.Simulation.SetAttValue("randSeed", randSeed) # car stream behavior (how fast car into, how many cars into)
         self.vissim.Simulation.SetAttValue("NumCores", 1)
         self.vissim.Simulation.SetAttValue("UseMaxSimSpeed", True)
-        self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 1) # Quick Mode (no car visualization)
-        #self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 0) # Normal Mode (car visualization)
+        #self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 1) # Quick Mode (no car visualization)
+        self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 0) # Normal Mode (car visualization)
 
     def set_evaluation_atts(self, simPeriod, dataCollectionInterval = 30):
         # |-------|-------|-------|-------|-------| ..... | 5000
@@ -157,7 +157,7 @@ class Vissim:
 
     def get_all_vehicles_by_lanes(self, link_id,  lane_id):
         """
-        3-1, 3-2, 3-3
+        1-1, 1-2, 1-3
         """
         lane_vehs_num_obj = self.vissim.Net.Links.ItemByKey(link_id).Lanes.ItemByKey(lane_id).Vehs.GetMultiAttValues("No")
         return len(lane_vehs_num_obj)
@@ -285,7 +285,7 @@ class Vissim:
         return speed_init + random.randint(step_min, step_max) * speed_interval
 
 
-    def reset(self, actions=[50, 50, 50], count=1, run_times=(180*5)):
+    def reset(self, actions=[70, 70, 70], count=1, run_times=(180*5)):
         # set input speed for SH zone
         self.stop_simulation()
         self.set_speed("speed_input", actions)
@@ -298,9 +298,9 @@ class Vissim:
         vehs_pass_to_acc = self.get_current_data_collection_result_vehs(1)
         self.input_flow_rate = flow_rate = self.calc_flow_rate(vehs_pass_to_acc, self.DataCollectionInterval)
 
-        density1 = self.get_all_vehicles_by_lanes(3, 1)
-        density2 = self.get_all_vehicles_by_lanes(3, 2)
-        density3 = self.get_all_vehicles_by_lanes(3, 3)
+        density1 = self.get_all_vehicles_by_lanes(1, 1)
+        density2 = self.get_all_vehicles_by_lanes(1, 2)
+        density3 = self.get_all_vehicles_by_lanes(1, 3)
 
         # ---------------------------------------------------------- using normalized densities
         acc_length = 1500
@@ -316,7 +316,7 @@ class Vissim:
         # ----------------------------------------------------------
 
         #state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3, density1, density2, density3])
-        state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3])
+        state = np.array([flow_rate, lane_percent_1, lane_percent_2, lane_percent_3])
 
         return state
 
@@ -354,9 +354,9 @@ class Vissim:
         vehs_pass_to_acc = self.get_current_data_collection_result_vehs(1)
         flow_rate = self.calc_flow_rate(vehs_pass_to_acc, self.DataCollectionInterval)
 
-        density1 = self.get_all_vehicles_by_lanes(3, 1)
-        density2 = self.get_all_vehicles_by_lanes(3, 2)
-        density3 = self.get_all_vehicles_by_lanes(3, 3)
+        density1 = self.get_all_vehicles_by_lanes(1, 1)
+        density2 = self.get_all_vehicles_by_lanes(1, 2)
+        density3 = self.get_all_vehicles_by_lanes(1, 3)
 
         # ---------------------------------------------------------- using normalized densities
         acc_length = 1500
@@ -373,7 +373,7 @@ class Vissim:
 
         # set state (flow rate, density of [SH, Acc])
         #state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3, density1, density2, density3])
-        state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3])
+        state = np.array([flow_rate, lane_percent_1, lane_percent_2, lane_percent_3])
 
         # set bottle next discharging rate threshold
         #terminal = reward > self.reward_threshold
