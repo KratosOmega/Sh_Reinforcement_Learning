@@ -9,6 +9,7 @@ import math
 import numpy as np
 import random
 from Env_Test import Env_Test
+from Vissim import Vissim
 import gc
 # ----------------------------------
 def presetup_separated():
@@ -41,16 +42,21 @@ def online_learning(env, episode, step, gamma=0.9, alpha=0.5, epsilon=0.1, is_lo
         print("Q-Table is Loaded!")
 
     for e in range(episode):
+        print(" ###########################: ", str(e))
         cum_reward = 0
         state = env.reset([70, 70, 70])
 
         for s in range(step):
+            print(" ---------------------------: ", str(s))
             a0_idx, a1_idx, a2_idx = 0, 0, 0
             actions = []
             s0 = memb_func_eval(ufr_memb_func, state[0])
             s1 = memb_func_eval(dr1_memb_func, state[1])
             s2 = memb_func_eval(dr2_memb_func, state[2])
             s3 = memb_func_eval(dr3_memb_func, state[3])
+
+            print(state)
+            print(" @ state: ", str(s0), str(s1), str(s2), str(s3))
             actions_of_state = qtable[s0][s1][s2][s3]
 
             if random.random() < epsilon:
@@ -84,6 +90,7 @@ def online_learning(env, episode, step, gamma=0.9, alpha=0.5, epsilon=0.1, is_lo
             qtable[s0][s1][s2][s3][1][a1_idx] = actions_of_state[1][a1_idx] + alpha * (reward + gamma * actions_of_next_state[1][next_a1_idx] - actions_of_state[1][a1_idx])
             qtable[s0][s1][s2][s3][2][a2_idx] = actions_of_state[2][a2_idx] + alpha * (reward + gamma * actions_of_next_state[2][next_a2_idx] - actions_of_state[2][a2_idx])
 
+            state = next_state
             # garbage recycling
             gc.collect()
 
@@ -91,7 +98,9 @@ def online_learning(env, episode, step, gamma=0.9, alpha=0.5, epsilon=0.1, is_lo
         #updateReport(r"\_report\episode_report.csv", [str(avg_r), str(e)])
         updateReport("/_report/episode_report.csv", [str(avg_r), str(e)])
             
-        print("----------------- ", str(cum_reward / step))
+        print("... avg_reward: ", str(avg_r))
+        print("")
+
         if e % 5 == 0:
             #np.save(r"\_saved\qtable", qtable)
             np.save("./_saved/qtable", qtable)
@@ -117,12 +126,13 @@ def presetup_one():
 """
 
 if __name__ == '__main__':
-    episode = 10
-    step = 10
+    episode = 5000
+    step = 200
     gamma = 0.9
     alpha = 0.5
     epsilon = 0.1
-    is_load = True
-    env = Env_Test()
+    is_load = False
+    #env = Env_Test()
+    env = Vissim()
     online_learning(env, episode, step, gamma, alpha, epsilon, is_load)
 

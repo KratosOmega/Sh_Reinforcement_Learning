@@ -316,7 +316,7 @@ class Vissim:
         # ----------------------------------------------------------
 
         #state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3, density1, density2, density3])
-        state = np.array([normalized_flow_rate, density1, density2, density3])
+        state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3])
 
         return state
 
@@ -373,7 +373,7 @@ class Vissim:
 
         # set state (flow rate, density of [SH, Acc])
         #state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3, density1, density2, density3])
-        state = np.array([normalized_flow_rate, density1, density2, density3])
+        state = np.array([normalized_flow_rate, lane_percent_1, lane_percent_2, lane_percent_3])
 
         # set bottle next discharging rate threshold
         #terminal = reward > self.reward_threshold
