@@ -13,7 +13,7 @@ from Vissim import Vissim
 import gc
 # ----------------------------------
 def presetup_separated():
-    input_memb_dim = 10
+    input_memb_dim = 20
     output_memb_dim = 9
     action_dim = 3
 
@@ -197,7 +197,7 @@ if __name__ == '__main__':
     gamma = 0.9
     alpha = 0.5
     epsilon = 0.2
-    is_load = False
+    is_load = True
     #env = Env_Test()
 
 

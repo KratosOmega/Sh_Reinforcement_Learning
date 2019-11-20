@@ -47,6 +47,7 @@ class Vissim:
         self.vissim.Simulation.SetAttValue("randSeed", randSeed) # car stream behavior (how fast car into, how many cars into)
         self.vissim.Simulation.SetAttValue("NumCores", 1)
         self.vissim.Simulation.SetAttValue("UseMaxSimSpeed", True)
+        self.vissim.SuspendUpdateGUI()
         self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 1) # Quick Mode (no car visualization)
         #self.vissim.Graphics.CurrentNetworkWindow.SetAttValue("QuickMode", 0) # Normal Mode (car visualization)
 
