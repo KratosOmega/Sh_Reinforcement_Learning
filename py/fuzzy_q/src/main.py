@@ -13,7 +13,7 @@ from Vissim import Vissim
 import gc
 # ----------------------------------
 def presetup_separated():
-    input_memb_dim = 5
+    input_memb_dim = 10
     output_memb_dim = 9
     action_dim = 3
 
@@ -193,7 +193,7 @@ def presetup_one():
 
 if __name__ == '__main__':
     episode = 5000
-    step = 200
+    step = 50
     gamma = 0.9
     alpha = 0.5
     epsilon = 0.2
