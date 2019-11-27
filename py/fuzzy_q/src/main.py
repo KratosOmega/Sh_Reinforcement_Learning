@@ -2,18 +2,19 @@
 Author: XIN LI
 """
 # ---------------------------------- customized libs
-from utils import updateReport, load_data, even_dist, memb_func_eval
+from utils import updateReport, load_data, even_dist, memb_func_eval, state_eval, vote_council, update_council
 # ----------------------------------
 # ---------------------------------- public libs
 import math
 import numpy as np
 import random
-from Env_Test import Env_Test
-from Vissim import Vissim
-import gc
+import gym
+from collections import deque
+import operator
+import matplotlib.pyplot as plt
 # ----------------------------------
 def presetup_separated():
-    input_memb_dim = 20
+    input_memb_dim = 50
     output_memb_dim = 9
     action_dim = 3
 
@@ -171,6 +172,573 @@ def online_learning(env, episode, step, gamma=0.9, alpha=0.5, epsilon=0.1, is_lo
             #np.save(r"\_saved\qtable", qtable)
             np.save("./_saved/qtable", qtable)
 
+def openai_learning(env, episode, step, gamma=0.9, alpha=0.5, epsilon=0.1, is_load = False):
+    curve = []
+    input_1_ms_dim, input_2_ms_dim, input_3_ms_dim, input_4_ms_dim = 25, 25, 100, 25
+    output_ms_dim = 2
+    output_dim = 1
+
+    input_1_func = even_dist(-4.8, 4.8, input_1_ms_dim)
+    input_2_func = even_dist(-3, 3, input_2_ms_dim)
+    input_3_func = even_dist(-24, 24, input_3_ms_dim)
+    input_4_func = even_dist(-3, 3, input_4_ms_dim)
+
+    qtable = np.zeros((
+        input_1_ms_dim,
+        input_2_ms_dim,
+        input_3_ms_dim,
+        input_4_ms_dim,
+        output_dim, 
+        output_ms_dim)
+    )
+
+    if is_load:
+        #qtable = np.load(r"\saved\qtable.npy")
+        qtable = np.load("./_saved/qtable.npy")
+        print("##############################")
+        print("###   Q-Table is Loaded!   ###")
+        print("##############################")
+
+    for e in range(episode):
+        print(" ###########################: ", str(e))
+        step = 0
+        state = env.reset()
+
+        while True:
+            step += 1
+            #print(" ---------------------------: ", str(step))
+            action = -1
+
+            # Get current State
+            s0 = memb_func_eval(input_1_func, state[0])
+            s1 = memb_func_eval(input_2_func, state[1])
+            s2 = memb_func_eval(input_3_func, state[2])
+            s3 = memb_func_eval(input_4_func, state[3])
+
+            #print(state)
+            #print(" @ state: ", str(s0), str(s1), str(s2), str(s3))
+            actions_of_state = qtable[s0][s1][s2][s3]
+
+            if random.uniform(0, 1) < epsilon:
+                action = random.choice([0, 1])
+            else:
+                action = np.where(actions_of_state[0] == np.amax(actions_of_state[0]))[0][0]
+                
+            #print(action)
+
+            state_next, reward, terminal, info = env.step(action)
+
+            if terminal:
+                reward *= -1
+                qtable[s0][s1][s2][s3][0][action] = actions_of_state[0][action] + alpha * (reward - actions_of_state[0][action])
+                break
+            else:
+                n_s0 = memb_func_eval(input_1_func, state_next[0])
+                n_s1 = memb_func_eval(input_2_func, state_next[1])
+                n_s2 = memb_func_eval(input_3_func, state_next[2])
+                n_s3 = memb_func_eval(input_4_func, state_next[3])
+
+                actions_of_state_next = qtable[n_s0][n_s1][n_s2][n_s3]
+
+                action_next = np.where(actions_of_state_next[0] == np.amax(actions_of_state_next[0]))[0][0]
+
+                # TD Update:
+                qtable[s0][s1][s2][s3][0][action] = actions_of_state[0][action] + alpha * (reward + gamma * actions_of_state_next[0][action_next] - actions_of_state[0][action])
+
+                state = state_next
+
+            
+        curve.append(step)
+
+        #updateReport(r"\_report\episode_report.csv", [str(avg_r), str(e)])
+        updateReport("/_report/episode_report.csv", [str(step), str(e)])
+            
+        print("... step: ", str(step))
+        print("")
+
+        if e % 5 == 0:
+            #np.save(r"\_saved\qtable", qtable)
+            plt.plot(curve)
+            plt.xlabel('x - iteration')
+            plt.ylabel('y - score')
+            plt.title('performance graph')
+            plt.savefig('./_plot/plot.png')
+            #np.save("./_saved/qtable", qtable) 
+
+def openai_learning_replay_1(env, episode, step, gamma=0.9, alpha=0.5, epsilon=0.1, batch_size = 50, is_load = False):
+    # ------------------------------------------------- hyperparameter setup
+    curve = []
+    best_score = 0
+    memory = deque(maxlen=1000)
+    input_1_ms_dim, input_2_ms_dim, input_3_ms_dim, input_4_ms_dim = 25, 25, 100, 25
+    #input_1_ms_dim, input_2_ms_dim, input_3_ms_dim, input_4_ms_dim = 25, 25, 25, 25
+    #input_1_ms_dim, input_2_ms_dim, input_3_ms_dim, input_4_ms_dim = 75, 75, 75, 75
+    output_ms_dim = 2
+    output_dim = 1
+
+    # ------------------------------------------------- input membership functions
+    input_1_func = even_dist(-4.8, 4.8, input_1_ms_dim)
+    input_2_func = even_dist(-3, 3, input_2_ms_dim)
+    input_3_func = even_dist(-24, 24, input_3_ms_dim)
+    input_4_func = even_dist(-3, 3, input_4_ms_dim)
+
+    # ------------------------------------------------- Q-Table / Rules
+    qtable = np.zeros((
+        input_1_ms_dim,
+        input_2_ms_dim,
+        input_3_ms_dim,
+        input_4_ms_dim,
+        output_dim, 
+        output_ms_dim)
+    )
+
+    # ------------------------------------------------- Load pre-trained Q-Table
+    if is_load:
+        #qtable = np.load(r"\saved\qtable.npy")
+        qtable = np.load("./_saved/qtable.npy")
+        print("##############################")
+        print("###   Q-Table is Loaded!   ###")
+        print("##############################")
+
+    for e in range(episode):
+        step = 0
+        state = env.reset()
+        temp_memory = deque(maxlen=500)
+
+        print(" ###########################: ", str(e))
+
+        while True:
+            step += 1
+            action = 0
+
+            # Get current State
+            s0 = memb_func_eval(input_1_func, state[0])
+            s1 = memb_func_eval(input_2_func, state[1])
+            s2 = memb_func_eval(input_3_func, state[2])
+            s3 = memb_func_eval(input_4_func, state[3])
+
+            #print(state)
+            #print(" @ state: ", str(s0), str(s1), str(s2), str(s3))
+            actions_of_state = qtable[s0][s1][s2][s3]
+
+            if random.uniform(0, 1) < epsilon:
+                action = random.choice([0, 1])
+            else:
+                action = np.where(actions_of_state[0] == np.amax(actions_of_state[0]))[0][0]
+                
+            #print(action)
+
+            state_next, reward, terminal, info = env.step(action)
+
+            if terminal:
+                reward = -1
+                #qtable[s0][s1][s2][s3][0][action] = reward
+                qtable[s0][s1][s2][s3][0][action] = actions_of_state[0][action] + alpha * (reward - actions_of_state[0][action])
+
+                if step >= best_score:
+                    best_score = step
+                    #memory += temp_memory
+
+                    # Batch Replay
+                    batch = temp_memory
+                    for _state, _action, _reward, _state_next, _terminal in batch:
+                        # Get current State
+                        _s0 = memb_func_eval(input_1_func, _state[0])
+                        _s1 = memb_func_eval(input_2_func, _state[1])
+                        _s2 = memb_func_eval(input_3_func, _state[2])
+                        _s3 = memb_func_eval(input_4_func, _state[3])
+
+                        _n_s0 = memb_func_eval(input_1_func, _state_next[0])
+                        _n_s1 = memb_func_eval(input_2_func, _state_next[1])
+                        _n_s2 = memb_func_eval(input_3_func, _state_next[2])
+                        _n_s3 = memb_func_eval(input_4_func, _state_next[3])
+
+                        _actions_of_state_next = qtable[_n_s0][_n_s1][_n_s2][_n_s3]
+                        _action_next = np.where(_actions_of_state_next[0] == np.amax(_actions_of_state_next[0]))[0][0]
+
+                        # TD Update:
+                        q_old = qtable[_s0][_s1][_s2][_s3][0][_action]
+                        q_new = qtable[_n_s0][_n_s1][_n_s2][_n_s3][0][_action_next]
+
+                        qtable[_s0][_s1][_s2][_s3][0][_action] = q_old + alpha * (_reward + gamma * q_new - q_old)
+                        #qtable[s0][s1][s2][s3][0][_action] = (1 - alpha) * q_old + alpha * (_reward)
+
+                break
+
+            else:
+                #reward *= (1 + step / 500)
+                #temp_memory.append((state, action, reward, state_next, terminal))
+
+                n_s0 = memb_func_eval(input_1_func, state_next[0])
+                n_s1 = memb_func_eval(input_2_func, state_next[1])
+                n_s2 = memb_func_eval(input_3_func, state_next[2])
+                n_s3 = memb_func_eval(input_4_func, state_next[3])
+
+                actions_of_state_next = qtable[n_s0][n_s1][n_s2][n_s3]
+
+                action_next = np.where(actions_of_state_next[0] == np.amax(actions_of_state_next[0]))[0][0]
+
+                # TD Update:
+                qtable[s0][s1][s2][s3][0][action] = actions_of_state[0][action] + alpha * (reward + gamma * actions_of_state_next[0][action_next] - actions_of_state[0][action])
+
+                state = state_next
+
+      
+        #updateReport(r"\_report\episode_report.csv", [str(avg_r), str(e)])
+        #updateReport("/_report/episode_report.csv", [str(step), str(e)])
+        curve.append(step)
+            
+
+        """
+        if step > best_score * 0.9:
+            print("")
+            print("")
+            print(" =============== Update memory")
+            print("")
+            print("")
+            memory += temp_memory
+        """
+ 
+
+
+        """
+        # Batch Replay
+        if len(memory) > batch_size:
+            batch = random.sample(memory, batch_size)
+            for _state, _action, _reward, _state_next, _terminal in batch:
+                # Get current State
+                _s0 = memb_func_eval(input_1_func, _state[0])
+                _s1 = memb_func_eval(input_2_func, _state[1])
+                _s2 = memb_func_eval(input_3_func, _state[2])
+                _s3 = memb_func_eval(input_4_func, _state[3])
+
+                _n_s0 = memb_func_eval(input_1_func, _state_next[0])
+                _n_s1 = memb_func_eval(input_2_func, _state_next[1])
+                _n_s2 = memb_func_eval(input_3_func, _state_next[2])
+                _n_s3 = memb_func_eval(input_4_func, _state_next[3])
+
+                _actions_of_state_next = qtable[_n_s0][_n_s1][_n_s2][_n_s3]
+                _action_next = np.where(_actions_of_state_next[0] == np.amax(_actions_of_state_next[0]))[0][0]
+
+                # TD Update:
+                q_old = qtable[_s0][_s1][_s2][_s3][0][_action]
+                q_new = qtable[_n_s0][_n_s1][_n_s2][_n_s3][0][_action_next]
+
+                qtable[_s0][_s1][_s2][_s3][0][_action] = q_old + alpha * (_reward + gamma * q_new - q_old)
+                #qtable[s0][s1][s2][s3][0][_action] = (1 - alpha) * q_old + alpha * (_reward)
+        """
+
+
+        if e % 5 == 0:
+            #np.save(r"\_saved\qtable", qtable)
+            plt.plot(curve)
+            plt.xlabel('x - iteration')
+            plt.ylabel('y - score')
+            plt.title('performance graph')
+            plt.savefig('./_plot/plot.png')
+            #np.save("./_saved/qtable", qtable)  
+
+def openai_learning_replay_2(env, episode, step, gamma=0.9, alpha=0.5, epsilon=0.1, batch_size = 50, is_load = False):
+    # ------------------------------------------------- hyperparameter setup
+    curve = []
+    best_score = 0
+    memory = deque(maxlen=2500)
+    input_1_ms_dim, input_2_ms_dim, input_3_ms_dim, input_4_ms_dim = 25, 25, 100, 25
+    #input_1_ms_dim, input_2_ms_dim, input_3_ms_dim, input_4_ms_dim = 25, 25, 25, 25
+    #input_1_ms_dim, input_2_ms_dim, input_3_ms_dim, input_4_ms_dim = 75, 75, 75, 75
+    output_ms_dim = 2
+    output_dim = 1
+
+    # ------------------------------------------------- input membership functions
+    input_1_func = even_dist(-4.8, 4.8, input_1_ms_dim)
+    input_2_func = even_dist(-3, 3, input_2_ms_dim)
+    input_3_func = even_dist(-24, 24, input_3_ms_dim)
+    input_4_func = even_dist(-3, 3, input_4_ms_dim)
+
+    # ------------------------------------------------- Q-Table / Rules
+    qtable = np.zeros((
+        input_1_ms_dim,
+        input_2_ms_dim,
+        input_3_ms_dim,
+        input_4_ms_dim,
+        output_dim, 
+        output_ms_dim)
+    )
+
+    # ------------------------------------------------- Load pre-trained Q-Table
+    if is_load:
+        #qtable = np.load(r"\saved\qtable.npy")
+        qtable = np.load("./_saved/qtable.npy")
+        print("##############################")
+        print("###   Q-Table is Loaded!   ###")
+        print("##############################")
+
+    for e in range(episode):
+        step = 0
+        state = env.reset()
+        temp_memory = deque(maxlen=500)
+
+        print(" ###########################: ", str(e))
+
+        while True:
+            step += 1
+            action = 0
+
+            # Get current State
+            s0 = memb_func_eval(input_1_func, state[0])
+            s1 = memb_func_eval(input_2_func, state[1])
+            s2 = memb_func_eval(input_3_func, state[2])
+            s3 = memb_func_eval(input_4_func, state[3])
+
+            #print(state)
+            #print(" @ state: ", str(s0), str(s1), str(s2), str(s3))
+            actions_of_state = qtable[s0][s1][s2][s3]
+
+            if random.uniform(0, 1) < epsilon:
+                action = random.choice([0, 1])
+            else:
+                action = np.where(actions_of_state[0] == np.amax(actions_of_state[0]))[0][0]
+                
+            #print(action)
+
+            state_next, reward, terminal, info = env.step(action)
+
+            if terminal:
+                reward = -1
+                #qtable[s0][s1][s2][s3][0][action] = reward
+                qtable[s0][s1][s2][s3][0][action] = actions_of_state[0][action] + alpha * (reward - actions_of_state[0][action])
+                
+                if step >= best_score:
+                    best_score = step
+                    memory += temp_memory
+
+                break
+
+            else:
+                #reward *= (1 + step / 500)
+                temp_memory.append((state, action, reward, state_next, terminal))
+
+                n_s0 = memb_func_eval(input_1_func, state_next[0])
+                n_s1 = memb_func_eval(input_2_func, state_next[1])
+                n_s2 = memb_func_eval(input_3_func, state_next[2])
+                n_s3 = memb_func_eval(input_4_func, state_next[3])
+
+                actions_of_state_next = qtable[n_s0][n_s1][n_s2][n_s3]
+
+                action_next = np.where(actions_of_state_next[0] == np.amax(actions_of_state_next[0]))[0][0]
+
+                # TD Update:
+                qtable[s0][s1][s2][s3][0][action] = actions_of_state[0][action] + alpha * (reward + gamma * actions_of_state_next[0][action_next] - actions_of_state[0][action])
+
+                state = state_next
+
+      
+        #updateReport(r"\_report\episode_report.csv", [str(avg_r), str(e)])
+        #updateReport("/_report/episode_report.csv", [str(step), str(e)])
+        curve.append(step)
+
+
+        # Batch Replay
+        if len(memory) > batch_size:
+            #batch = memory
+            batch = random.sample(memory, batch_size)
+            for _state, _action, _reward, _state_next, _terminal in batch:
+                # Get current State
+                _s0 = memb_func_eval(input_1_func, _state[0])
+                _s1 = memb_func_eval(input_2_func, _state[1])
+                _s2 = memb_func_eval(input_3_func, _state[2])
+                _s3 = memb_func_eval(input_4_func, _state[3])
+
+                _n_s0 = memb_func_eval(input_1_func, _state_next[0])
+                _n_s1 = memb_func_eval(input_2_func, _state_next[1])
+                _n_s2 = memb_func_eval(input_3_func, _state_next[2])
+                _n_s3 = memb_func_eval(input_4_func, _state_next[3])
+
+                _actions_of_state_next = qtable[_n_s0][_n_s1][_n_s2][_n_s3]
+                _action_next = np.where(_actions_of_state_next[0] == np.amax(_actions_of_state_next[0]))[0][0]
+
+                # TD Update:
+                q_old = qtable[_s0][_s1][_s2][_s3][0][_action]
+                q_new = qtable[_n_s0][_n_s1][_n_s2][_n_s3][0][_action_next]
+
+                qtable[_s0][_s1][_s2][_s3][0][_action] = q_old + alpha * (_reward + gamma * q_new - q_old)
+                #qtable[s0][s1][s2][s3][0][_action] = (1 - alpha) * q_old + alpha * (_reward)
+
+
+
+        if e % 5 == 0:
+            #np.save(r"\_saved\qtable", qtable)
+            plt.plot(curve)
+            plt.xlabel('x - iteration')
+            plt.ylabel('y - score')
+            plt.title('performance graph')
+            plt.savefig('./_plot/plot.png')
+            #np.save("./_saved/qtable", qtable)  
+
+
+def openai_learning_replay_vote(env, episode, step, gamma=0.9, alpha=0.5, epsilon=0.1, batch_size = 50, is_load = False):
+    # ------------------------------------------------- hyperparameter setup
+    curve = []
+    best_score = 0
+    memory = deque(maxlen=500)
+    #input_1_ms_dim, input_2_ms_dim, input_3_ms_dim, input_4_ms_dim = 10, 10, 25, 10
+    #input_1_ms_dim, input_2_ms_dim, input_3_ms_dim, input_4_ms_dim = 25, 25, 100, 25
+    #input_1_ms_dim, input_2_ms_dim, input_3_ms_dim, input_4_ms_dim = 25, 25, 25, 25
+    input_1_ms_dim, input_2_ms_dim, input_3_ms_dim, input_4_ms_dim = 75, 50, 150, 50
+    output_ms_dim = 2
+    output_dim = 1
+
+    # ------------------------------------------------- input membership functions
+    input_1_func = even_dist(-4.8, 4.8, input_1_ms_dim)
+    input_2_func = even_dist(-3, 3, input_2_ms_dim)
+    input_3_func = even_dist(-24, 24, input_3_ms_dim)
+    input_4_func = even_dist(-3, 3, input_4_ms_dim)
+
+    # ------------------------------------------------- Q-Table / Rules
+
+    qtable = np.random.rand(
+        input_1_ms_dim,
+        input_2_ms_dim,
+        input_3_ms_dim,
+        input_4_ms_dim,
+        output_dim, 
+        output_ms_dim
+    )
+
+    qtable *= 0.001
+    """
+    qtable = np.zeros((
+        input_1_ms_dim,
+        input_2_ms_dim,
+        input_3_ms_dim,
+        input_4_ms_dim,
+        output_dim, 
+        output_ms_dim)
+    )
+    """
+
+    # ------------------------------------------------- Load pre-trained Q-Table
+    if is_load:
+        #qtable = np.load(r"\saved\qtable.npy")
+        qtable = np.load("./_saved/qtable.npy")
+        print("##############################")
+        print("###   Q-Table is Loaded!   ###")
+        print("##############################")
+
+    for e in range(episode):
+        step = 0
+        state = env.reset()
+        temp_memory = deque(maxlen=500)
+
+        print(" ###########################: ", str(e))
+
+        while True:
+            step += 1
+            #action = 0
+
+            memb_func_list = [
+                input_1_func, 
+                input_2_func, 
+                input_3_func, 
+                input_4_func
+            ]
+
+            # Get current State
+            state_list, state_prob_list = state_eval(memb_func_list, state)
+
+            action, vote_record = vote_council(state_list, state_prob_list, qtable)
+
+            """
+            print(action)
+
+            for i in vote_record:
+                print(i)
+            """
+
+            if random.uniform(0, 1) < epsilon:
+                action = random.choice([0, 1])
+  
+            state_next, reward, terminal, info = env.step(action)
+
+            if terminal:
+                reward = -1
+
+                qtable = update_council(alpha, gamma, reward, terminal, qtable, action, vote_record)
+
+
+
+
+                """
+                memory += temp_memory
+
+                """
+                if step >= best_score:
+                    best_score = step
+                    memory += temp_memory
+
+
+
+
+
+
+                break
+
+            else:
+                #reward *= (1 + step / 500)
+                temp_memory.append((state, action, reward, state_next, terminal))
+
+                # Get Next State
+                state_next_list, state_next_prob_list = state_eval(memb_func_list, state_next)
+
+                _, vote_next_record = vote_council(state_next_list, state_next_prob_list, qtable)
+
+                qtable = update_council(alpha, gamma, reward, terminal, qtable, action, vote_record, vote_next_record)
+
+                state = state_next
+      
+        #updateReport(r"\_report\episode_report.csv", [str(avg_r), str(e)])
+        #updateReport("/_report/episode_report.csv", [str(step), str(e)])
+        curve.append(step)
+
+
+
+
+
+
+
+        # Batch Replay
+        if len(memory) > batch_size:
+            #batch = memory
+            batch = random.sample(memory, batch_size)
+            for _state, _action, _reward, _state_next, _terminal in batch:
+
+                 # Get current State
+                _state_list, _state_prob_list = state_eval(memb_func_list, _state)
+                _, _vote_record = vote_council(_state_list, _state_prob_list, qtable)
+
+                # Get Next State
+                _state_next_list, _state_next_prob_list = state_eval(memb_func_list, _state_next)
+                _, _vote_next_record = vote_council(_state_next_list, _state_next_prob_list, qtable)
+
+                qtable = update_council(alpha, gamma, reward, _terminal, qtable, _action, _vote_record, _vote_next_record)
+
+
+
+
+
+
+
+        if e % 5 == 0:
+            #np.save(r"\_saved\qtable", qtable)
+            plt.plot(curve)
+            plt.xlabel('x - iteration')
+            plt.ylabel('y - score')
+            plt.title('performance graph')
+            plt.savefig('./_plot/plot.png')
+            #np.save("./_saved/qtable", qtable)  
+
+
+
 """
 def get_map(dim_shape):
     count = 0
@@ -192,17 +760,29 @@ def presetup_one():
 """
 
 if __name__ == '__main__':
-    episode = 5000
+    """
+    conda deactivate
+    """
+    ENV_NAME = "CartPole-v1"
+    episode = 9000 #999999
     step = 50
-    gamma = 0.9
-    alpha = 0.5
+    gamma = 0.7
+    alpha = 0.1
     epsilon = 0.2
-    is_load = True
+    batch_size =100 
+    is_load = False
     #env = Env_Test()
 
+    env = gym.make(ENV_NAME)
 
-    env = Vissim()
-    online_learning(env, episode, step, gamma, alpha, epsilon, is_load)
+    openai_learning_replay_vote(env, episode, step, gamma, alpha, epsilon, batch_size, is_load)
+    #openai_learning_replay_2(env, episode, step, gamma, alpha, epsilon, batch_size, is_load)
+
+
+
+    #openai_learning(env, episode, step, gamma, alpha, epsilon, is_load)
+    #openai_learning_replay_1(env, episode, step, gamma, alpha, epsilon, batch_size, is_load)
+    #online_learning(env, episode, step, gamma, alpha, epsilon, is_load)
     """
     offline_learning(1, step, gamma, alpha, epsilon, is_load)
     """
